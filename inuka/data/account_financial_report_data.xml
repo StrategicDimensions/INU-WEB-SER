@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_master_account_report_bank_reconciliation_with_journal" model="ir.actions.client">
+        <field name="name">Master Bank Reconciliation</field>
+        <field name="tag">account_report</field>
+        <field name="context" eval="{'model': 'master.account.bank.reconciliation.report'}" />
+    </record>
+
+</odoo>
