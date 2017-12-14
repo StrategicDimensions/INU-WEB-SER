@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_send_approval_email_it" model="ir.actions.server">
+        <field name="name">Send Email (IT)</field>
+        <field name="type">ir.actions.server</field>
+        <field name="state">email</field>
+        <field name="model_id" ref="purchase.model_purchase_order"/>
+        <field name="template_id" ref="inuka.email_template_purchase_order_it"/>
+    </record>
+
+    <record id="action_add_followers_it" model="ir.actions.server">
+        <field name="name">Add Followers (IT)</field>
+        <field name="type">ir.actions.server</field>
+        <field name="state">followers</field>
+        <field name="model_id" ref="purchase.model_purchase_order"/>
+        <field name="partner_ids">[]</field>
+    </record>
+
+    <record id="action_update_sent_for_approval_it" model="ir.actions.server">
+        <field name="name">Update Sent For Approval</field>
+        <field name="type">ir.actions.server</field>
+        <field name="state">object_write</field>
+        <field name="model_id" ref="purchase.model_purchase_order"/>
+    </record>
+
+    <record id="action_update_sent_for_approval_line_it" model="ir.server.object.lines">
+        <field name="type">value</field>
+        <field name="col1" search="[('model', '=', 'purchase.order'), ('name', '=', 'sent_for_approval')]"/>
+        <field name="value">1</field>
+        <field name="server_id" ref="inuka.action_update_sent_for_approval_it"/>
+    </record>
+
+    <record id="action_send_approval_email_non_it" model="ir.actions.server">
+        <field name="name">Send Email (Non IT)</field>
+        <field name="type">ir.actions.server</field>
+        <field name="state">email</field>
+        <field name="model_id" ref="purchase.model_purchase_order"/>
+        <field name="template_id" ref="inuka.email_template_purchase_order_non_it"/>
+    </record>
+
+    <record id="action_add_followers_non_it" model="ir.actions.server">
+        <field name="name">Add Followers (Non IT)</field>
+        <field name="type">ir.actions.server</field>
+        <field name="state">followers</field>
+        <field name="model_id" ref="purchase.model_purchase_order"/>
+        <field name="partner_ids">[]</field>
+    </record>
+
+    <record id="rule_purchase_order_it_to_approve" model="base.automation">
+        <field name="name">Send Approval Request (IT)</field>
+        <field name="model_id" ref="purchase.model_purchase_order"/>
+        <field name="state">multi</field>
+        <field name="trigger">on_write</field>
+        <field name="active" eval="True"/>
+        <field name="filter_domain">[('state', '=', 'to approve'), ('sent_for_approval', '=', False), ('purchase_type', '=', 'it')]</field>
+        <field name="filter_pre_domain">['|', ("state", "=", "draft"), ("state", "=", "sent")]</field>
+        <field name="child_ids" eval="[(6, 0, [ref('action_send_approval_email_it'), ref('action_add_followers_it'), ref('action_update_sent_for_approval_it')])]"/>
+    </record>
+
+    <record id="rule_purchase_order_non_it_to_approve" model="base.automation">
+        <field name="name">Send Approval Request (Non IT)</field>
+        <field name="model_id" ref="purchase.model_purchase_order"/>
+        <field name="state">multi</field>
+        <field name="trigger">on_write</field>
+        <field name="active" eval="True"/>
+        <field name="filter_domain">[("state", "=", "to approve"), ("sent_for_approval", "=", False), ("purchase_type", "!=", "it")]</field>
+        <field name="filter_pre_domain">["|", ("state", "=", "draft"), ("state", "=", "sent")]</field>
+        <field name="child_ids" eval="[(6, 0, [ref('action_send_approval_email_non_it'), ref('action_add_followers_non_it'), ref('action_update_sent_for_approval_it')])]"/>
+    </record>
+
+    <record id="action_send_approval_email_account_invoice" model="ir.actions.server">
+        <field name="name">Send Email (Vendor Bill To Approve)</field>
+        <field name="type">ir.actions.server</field>
+        <field name="state">email</field>
+        <field name="model_id" ref="account.model_account_invoice"/>
+        <field name="template_id" ref="inuka.email_template_account_invoice_to_approve"/>
+    </record>
+
+    <record id="rule_vendor_bill_to_approve" model="base.automation">
+        <field name="name">Send Approval Request (Vendor Bill)</field>
+        <field name="model_id" ref="account.model_account_invoice"/>
+        <field name="state">multi</field>
+        <field name="trigger">on_create</field>
+        <field name="active" eval="True"/>
+        <field name="filter_domain">[('state', '=', 'draft'), ('type', '=', 'in_invoice'), ('approved_for_payment', '=', False)]</field>
+        <field name="child_ids" eval="[(6, 0, [ref('action_send_approval_email_account_invoice')])]"/>
+    </record>
+
+    <record id="rule_unreserved_fund_fully_invoiced" model="base.automation">
+        <field name="name">Unreserved Fund (Fully Invoiced)</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="state">code</field>
+        <field name="trigger">on_write</field>
+        <field name="active" eval="True"/>
+        <field name="filter_pre_domain">[("state", "=", "sale"), ("invoice_status", "!=", "invoiced")]</field>
+        <field name="filter_domain">[("state", "=", "sale"), ("invoice_status", "=", "invoiced")]</field>
+        <field name="code">
+records.action_unlink_reserved_fund()
+records.write({'paid': True})
+        </field>
+    </record>
+
+    <record id="rule_kit_order_fully_invoiced" model="base.automation">
+        <field name="name">Kit Order (Fully Invoiced)</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="state">code</field>
+        <field name="trigger">on_write</field>
+        <field name="active" eval="True"/>
+        <field name="filter_pre_domain">[("state", "=", "sale"), ("invoice_status", "!=", "invoiced"), ("kit_order", "=", True)]</field>
+        <field name="filter_domain">[("state", "=", "sale"), ("invoice_status", "=", "invoiced"), ("kit_order", "=", True)]</field>
+        <field name="code">
+Pricelist = env['product.pricelist']
+for order in records:
+    kit = order.partner_id.kit
+    country= order.partner_id.country_id.name
+    if order.partner_id.status == 'candidate':
+        if kit in ('small', 'medium', 'large'):
+            if country != 'Namibia':
+                pricelist = Pricelist.search([('name', '=', 'New Pricelist')], limit=1)
+            else:
+                pricelist = Pricelist.search([('name', '=', 'New Pricelist (Namibia)')], limit=1)
+            order.partner_id.write({'status': 'new', 'property_product_pricelist': pricelist.id})
+
+        elif kit in ('junior', 'senior'):
+            if country != 'Namibia':
+                pricelist = Pricelist.search([('name', '=', 'Established Pricelist')], limit=1)
+            else:
+                pricelist = Pricelist.search([('name', '=', 'Established Pricelist (Namibia)')], limit=1)
+            order.partner_id.write({'status': kit, 'property_product_pricelist': pricelist.id})
+        </field>
+    </record>
+
+</odoo>
