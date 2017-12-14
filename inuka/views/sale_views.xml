@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_product_categ_form_inuka" model="ir.ui.view">
+        <field name="name">product.categ.form.inuka.view</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group[1]" position="replace">
+                <group>
+                    <group name="first">
+                        <field name="parent_id" class="oe_inline"/>
+                    </group>
+                    <group>
+                        <field name="category_pv" required="1"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+	<record id="view_sale_form_inuka_inherit" model="ir.ui.view">
+        <field name="name">sale.form.inuka.view</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_confirm'][1]" position="replace">
+                <button name="action_confirm" id="action_confirm"
+                    string="Confirm Sale" class="btn-primary" type="object"
+                    attrs="{'invisible': ['|', ('state', 'not in', ['sent']), ('paid', '=', False)]}"/>
+            </xpath>
+            <xpath expr="//button[@name='action_confirm'][2]" position="replace">
+                <button name="action_confirm"
+                    string="Confirm Sale" type="object"
+                    attrs="{'invisible': ['|', ('state', 'not in', ['draft']), ('paid', '=', False)]}"/>
+            </xpath>
+            <button name="action_unlock" position="after">
+                <button name="action_add_reserved_fund"
+                    string="Reserve Funds" type="object"
+                    attrs="{'invisible': ['|', ('state', 'in', ['sale', 'done', 'cancel']), ('paid', '=', True)]}"/>
+                <button name="action_unlink_reserved_fund"
+                    string="Unreserve Funds" type="object"
+                    attrs="{'invisible': ['|', ('state', 'in', ['sale', 'done', 'cancel']), ('paid', '=', False)]}"/>
+            </button>
+
+            <button name="action_view_invoice" position="after">
+                <button name="dummy_redirect" type="object" class="oe_stat_button disabled" icon="fa-pencil-square-o">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value"><field name="reserve" widget='monetary'/></span>
+                        <span class="o_stat_text">Available Funds</span>
+                    </div>
+                </button>
+            </button>
+            <xpath expr="//field[@name='payment_term_id']" position="after">
+                <field name="pv" required="True"/>
+            </xpath>
+            <xpath expr="//sheet/group" position="after">
+                <group>
+                    <group>
+                        <field name="order_sent_by" required="True"/>
+                        <field name="sale_date" required="True"/>
+                        <field name="order_type" required="True"/>
+                        <field name="bulk_master_id" context="{'order_type': order_type, 'partner_id': partner_id}" attrs="{'invisible': [('order_type', 'not in', ['bulk', 'consolidated'])], 'required': [('order_type', 'in', ['bulk', 'consolidated'])]}"/>
+                        <field name="paid"/>
+                    </group>
+                    <group>
+                        <field name="order_total" required="True"/>
+                        <field name="product_cost"/>
+                        <field name="shipping_cost"/>
+                        <field name="order_status"/>
+                    </group>
+                </group>
+            </xpath>
+            <xpath expr="//notebook/page[1]/field[@name='order_line']/tree/field[@name='qty_to_invoice']" position="after">
+                <field name="unit_pv" string="Unit PV" readonly="1" force_save="1"/>
+                <field name="pv" string="PV's" readonly="1" force_save="1"/>
+            </xpath>
+            <xpath expr="//field[@name='amount_total']" position="after">
+                <label for="total_pv" string="Total PV's" style="color: red;"/>
+                <div>
+                    <field name="total_pv" style="color: red;"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="sale_management.sale_order_view_form" model="ir.ui.view">
+        <field name="name">sale.order.form</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='sale_pay']/field[@name='invoice_status']" position="attributes">
+                <attribute name="invisible" eval="False"/>
+            </xpath>
+            <xpath expr="//button[@name='action_quotation_send']" position="before">
+                <button name="%(sale.action_view_sale_advance_payment_inv)d" string="Create Invoice"
+                    type="action" class="btn-primary"
+                    attrs="{'invisible': [('invoice_status', '!=', 'to invoice')]}"/>
+                <button name="%(sale.action_view_sale_advance_payment_inv)d" string="Create Invoice"
+                    type="action"
+                    attrs="{'invisible': ['|',('invoice_status', '!=', 'no'), ('state', '!=', 'sale')]}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_sale_order_form_inherit_inuka" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.inuka</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale_stock.view_order_form_inherit_sale_stock"/>
+        <field name="arch" type="xml">
+            <group name="sale_shipping" position="inside">
+                <field name="delivery_status"/>
+            </group>
+        </field>
+    </record>
+
+    <record id="view_sale_quotation_tree_inherit_inuka" model="ir.ui.view">
+        <field name="name">sale.quotation.tree.inherit.inuka</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_quotation_tree"/>
+        <field name="arch" type="xml">
+            <field name="name" position="attributes">
+                <attribute name="string">Order Number</attribute>
+            </field>
+            <field name="date_order" position="attributes">
+                <attribute name="string">Order Date</attribute>
+            </field>
+            <field name="date_order" position="after">
+                <field name="order_type" string="Type"/>
+            </field>
+            <field name="user_id" position="replace"/>
+            <field name="amount_total" position="after">
+                <field name="shipping_cost" string="Ship"/>
+                <field name="reserve"/>
+                <field name="paid"/>
+                <field name="order_status"/>
+                <field name="invoice_status"/>
+                <field name="delivery_status"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_sale_order_tree_inherit_inuka" model="ir.ui.view">
+        <field name="name">sale.order.tree.inherit.inuka</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_tree"/>
+        <field name="arch" type="xml">
+            <field name="confirmation_date" position="after">
+                <field name="order_type" string="Type"/>
+            </field>
+            <field name="user_id" position="replace"/>
+            <field name="amount_total" position="after">
+                <field name="shipping_cost" string="Ship"/>
+                <field name="reserve"/>
+                <field name="paid"/>
+                <field name="order_status"/>
+            </field>
+            <field name="invoice_status" position="after">
+                <field name="delivery_status"/>
+                <field name="state"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_reserved_fund_form" model="ir.ui.view">
+        <field name="name">reserved.fund.form</field>
+        <field name="model">reserved.fund</field>
+        <field name="arch" type="xml">
+            <form string="Reserved Funds" create="false" delete="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="amount"/>
+                        </group>
+                        <group>
+                            <field name="order_id"/>
+                            <field name="customer_id"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <label for="desctiption" string="Description"/>
+                    <div>
+                        <field name="desctiption"/>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_reserved_fund_tree" model="ir.ui.view">
+        <field name="name">reserved.fund.tree</field>
+        <field name="model">reserved.fund</field>
+        <field name="arch" type="xml">
+            <tree string="Reserved Funds" create="false" delete="false">
+                <field name="date" readonly="True"/>
+                <field name="desctiption" readonly="True"/>
+                <field name="amount" readonly="True"/>
+                <field name="order_id" readonly="True"/>
+                <field name="customer_id" readonly="True"/>
+                <field name="active" readonly="True"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_reserved_fund_form" model="ir.actions.act_window">
+        <field name="name">Reserved Funds</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">reserved.fund</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{"search_default_customer":1}</field>
+        <field name="help" type="html">
+          <p class="oe_view_nocontent_create">
+            Click to add Reserved Fund entries.
+          </p>
+        </field>
+    </record>
+
+    <menuitem id="reserved_fund_menu"
+        name="Reserved Funds"
+        parent="sale.sale_order_menu"
+        action="inuka.action_reserved_fund_form"
+        sequence="9"/>
+
+</odoo>
