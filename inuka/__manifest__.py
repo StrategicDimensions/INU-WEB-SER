@@ -3,7 +3,7 @@
 
 {
     'name': 'Inuka',
-    'version': '1.1',
+    'version': '1.2',
     'category': 'Purchases',
     'sequence': 60,
     'summary': 'Inuka',
