@@ -3,12 +3,12 @@
 
 {
     'name': "SMS Framework",
-    'version': "1.0.22",
+    'version': "1.6.22",
     'author': "Sythil Tech",
     'category': "Tools",
     'support': "steven@sythiltech.com.au",
     'summary':'Allows you to send and receive smses from multiple gateways',
-    'description':'Allows you to send and receive smses from multiple gateways',    
+    'description':'Allows you to send and receive smses from multiple gateways',
     'license':'LGPL-3',
     'data': [
         # 'data/ir.cron.csv',

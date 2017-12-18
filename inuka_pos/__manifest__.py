@@ -10,7 +10,7 @@
     """,
 
     'category': 'point_of_sale',
-    'version': '0.1',
+    'version': '1.6',
 
     # any module necessary for this one to work correctly
     'depends': ['base','point_of_sale'],
