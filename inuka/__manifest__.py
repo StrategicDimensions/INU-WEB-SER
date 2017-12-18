@@ -3,13 +3,13 @@
 
 {
     'name': 'Inuka',
-    'version': '1.3',
+    'version': '1.4',
     'category': 'Purchases',
     'sequence': 60,
     'summary': 'Inuka',
     'description': "",
     'website': 'https://www.odoo.com/',
-    'depends': ['purchase', 'delivery', 'base_automation', 'sms_frame', 'payment_mygate', 'account_bank_statement_import_ofx', 'inuka_pos'],
+    'depends': ['purchase', 'delivery', 'base_automation', 'sms_frame', 'payment_mygate', 'account_bank_statement_import_ofx', 'inuka_pos', 'helpdesk'],
     'data': [
         'security/ir.model.access.csv',
         'security/inuka_security.xml',
@@ -19,6 +19,7 @@
         'views/res_partner_views.xml',
         'views/sale_views.xml',
         'views/stock_views.xml',
+        'views/account.xml',
         'data/mail_template_data.xml',
         'data/base_automation_data.xml',
         'data/sequence_data.xml',
@@ -28,6 +29,7 @@
         'wizard/account_invoice_validate_view.xml',
         'wizard/master_account_bank_statement_import_view.xml',
         'views/report_bulk_view.xml',
+        'views/helpdesk_ticket_views.xml'
     ],
     'test': [
     ],

@@ -130,7 +130,7 @@ class MasterAccountBankStatementImport(models.TransientModel):
 
     def _get_partner(self, label):
         Partner = self.env['res.partner']
-        search_string = label.split()[-1]
+        search_string = label and label.split()[-1] or ''
         if len(search_string) == 6:
             partner = Partner.search([('ref', '=', search_string)], limit=1).id
         else:

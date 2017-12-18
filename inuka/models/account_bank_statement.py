@@ -30,13 +30,45 @@ from odoo.exceptions import UserError, ValidationError
 from odoo.addons.base.res.res_bank import sanitize_account_number
 
 
+class AccountBankStatement(models.Model):
+    _inherit = 'account.bank.statement'
+
+    @api.multi
+    def auto_match_partner(self):
+        Partner = self.env['res.partner']
+        for statement in self:
+            for line in statement.line_ids:
+                label = line.name
+                search_string = label and label.split()[-1] or ''
+                if len(search_string) == 6:
+                    partner = Partner.search([('ref', '=', search_string)], limit=1)
+                else:
+                    search_string = search_string.strip()
+                    if search_string.startswith("06"):
+                        search_string = search_string.replace("06", "276", 1)
+                    elif search_string.startswith("07"):
+                        search_string = search_string.replace("07", "277", 1)
+                    elif search_string.startswith("08"):
+                        search_string = search_string.replace("08", "278", 1)
+                    partner = Partner.search([('mobile', '=', search_string)], limit=1)
+                if partner:
+                    line.partner_id = partner
+        return True
+
+
 class AccountBankStatementLine(models.Model):
     _inherit = 'account.bank.statement.line'
 
     fitid = fields.Char("FITID")
     branch = fields.Char("Branch")
-    statement_reconciled = fields.Boolean("Reconciled")
+    statement_reconciled = fields.Boolean("Reconciled", readonly=True)
     master_bank_stmt_line_id = fields.Many2one('master.account.bank.statement.line', string='Master Statement Line')
+
+    @api.model
+    def name_search(self, name='', args=None, operator='ilike', limit=100):
+        args = args or []
+        recs = self.search(['|', '|', '|', ('name', operator, name), ('fitid', operator, name), ('amount', operator, name), ('partner_id.name', operator, name)] + args, limit=limit)
+        return recs.name_get()
 
 
 class AccountBankStatementImport(models.TransientModel):
@@ -64,7 +96,7 @@ class AccountBankStatementImport(models.TransientModel):
 
     def _get_partner(self, label):
         Partner = self.env['res.partner']
-        search_string = label.split()[-1]
+        search_string = label and label.split()[-1] or ''
         if len(search_string) == 6:
             partner = Partner.search([('ref', '=', search_string)], limit=1).id
         else:
@@ -487,7 +519,7 @@ class MasterAccountBankStatementLine(models.Model):
         help="Technical field holding the number given to the journal entry, automatically set when the statement line is reconciled then stored to set the same number again if the line is cancelled, set to draft and re-processed again.")
     fitid = fields.Char("FITID")
     branch = fields.Char("Branch")
-    statement_reconciled = fields.Boolean("Reconciled")
+    statement_reconciled = fields.Boolean("Reconciled", readonly=True)
     bank_stmt_line_id = fields.Many2one("account.bank.statement.line", "Statement Line")
 
     @api.one
@@ -1130,3 +1162,13 @@ class MasterAccountBankStatementLine(models.Model):
             raise UserError(_('Operation not allowed. Since your statement line already received a number, you cannot reconcile it entirely with existing journal entries otherwise it would make a gap in the numbering. You should book an entry and make a regular revert of it in case you want to cancel it.'))
         counterpart_moves.assert_balanced()
         return counterpart_moves
+
+    @api.multi
+    def manual_reconcile(self):
+        for line in self.filtered(lambda r: r.statement_reconciled == False):
+            if not line.bank_stmt_line_id:
+                raise UserError(_('Please select a bank statement line to reconcile.'))
+            line.statement_reconciled = True
+            line.bank_stmt_line_id.master_bank_stmt_line_id = line.id
+            line.bank_stmt_line_id.statement_reconciled = True
+        return True

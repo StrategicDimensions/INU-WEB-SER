@@ -10,3 +10,4 @@ from . import bulk_master
 from . import stock
 from . import account_bank_statement
 from . import account_journal
+from . import helpdesk

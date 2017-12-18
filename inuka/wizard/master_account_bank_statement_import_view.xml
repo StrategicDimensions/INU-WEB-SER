@@ -352,18 +352,6 @@
         </field>
     </record>
 
-    <record id="journal_dashboard_view_inherit_inuka" model="ir.ui.view">
-        <field name="name">account.journal.dashboard.kanban.inherit.inuka</field>
-        <field name="model">account.journal</field>
-        <field name="inherit_id" ref="account.account_journal_dashboard_kanban_view"/>
-        <field name="arch" type="xml">
-            <xpath expr='//div[@name="bank_journal_cta"]' position='inside'>
-                <button t-if="dashboard.bank_statements_source == 'file_import' &amp;&amp; dashboard.number_to_reconcile == 0" type="object" name="import_master_statement" class="btn btn-primary btn-sm btn-danger">Import Final Statement</button>
-                <a t-if="dashboard.bank_statements_source == 'file_import' &amp;&amp; dashboard.number_to_reconcile > 0" type="object" name="import_master_statement" class="oe_inline btn-danger">Import Final Statement</a>
-            </xpath>
-        </field>
-    </record>
-
     <record model="ir.ui.view" id="master_account_reports_journal_dashboard_kanban_view">
         <field name="name">master.account.journal.dashboard.kanban.reports</field>
         <field name="model">account.journal</field>
@@ -373,6 +361,32 @@
                 <div groups="account.group_account_manager">
                     <a type="action" name="%(action_master_account_report_bank_reconciliation_with_journal)d">Master Reconciliation Report</a>
                 </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="account_bank_statement_import.journal_dashboard_view_inherit" model="ir.ui.view">
+        <field name="name">account.journal.dashboard.kanban.inherit</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.account_journal_dashboard_kanban_view"/>
+        <field name="arch" type="xml">
+            <xpath expr='//div[@name="bank_journal_default_cta"]' position='inside'>
+                <br t-if="dashboard.number_to_reconcile == 0"/><button t-if="dashboard.number_to_reconcile == 0" type="object" name="import_statement" class="btn btn-primary btn-sm">Import Statement</button>
+                <a t-if="dashboard.number_to_reconcile > 0" type="object" name="import_statement" class="oe_inline">Import Statement</a>
+                <br t-if="dashboard.number_to_reconcile == 0"/><button t-if="dashboard.number_to_reconcile == 0" type="object" name="import_master_statement" class="btn btn-primary btn-sm">Import Final Statement</button>
+                <a t-if="dashboard.number_to_reconcile > 0" type="object" name="import_master_statement" class="oe_inline">Import Final Statement</a>
+            </xpath>
+            <xpath expr='//div[@name="bank_journal_cta"]' position='inside'>
+                <button t-if="dashboard.bank_statements_source == 'file_import' &amp;&amp; dashboard.number_to_reconcile == 0" type="object" name="import_statement" class="btn btn-primary btn-sm">Import Statement</button>
+                <a t-if="dashboard.bank_statements_source == 'file_import' &amp;&amp; dashboard.number_to_reconcile > 0" type="object" name="import_statement" class="oe_inline">Import Statement</a>
+                <button t-if="dashboard.bank_statements_source == 'file_import' &amp;&amp; dashboard.number_to_reconcile == 0" type="object" name="import_master_statement" class="btn btn-primary btn-sm">Import Final Statement</button>
+                <a t-if="dashboard.bank_statements_source == 'file_import' &amp;&amp; dashboard.number_to_reconcile > 0" type="object" name="import_master_statement" class="oe_inline">Import Final Statement</a>
+            </xpath>
+            <xpath expr='//div[@name="bank_cash_commands"]' position="after">
+                <t t-if="journal_type == 'bank'">
+                    <a type="object" name="import_statement">Import Statement</a>
+                    <a type="object" name="import_master_statement">Import Final Statement</a>
+                </t>
             </xpath>
         </field>
     </record>

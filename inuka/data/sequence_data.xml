@@ -10,5 +10,10 @@
             <field name="company_id" eval="False"/>
         </record>
 
+        <record id="account_reconcile_model" model="account.reconcile.model">
+            <field name="name">Reconcile Model</field>
+            <field name="account_id" search="[('code', '=', '101200')]"/>
+        </record>
+
     </data>
 </odoo>
