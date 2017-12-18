@@ -1,7 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_reserved_fund,reserved.fund,model_reserved_fund,sales_team.group_sale_salesman,1,1,1,0
-access_bulk_master_salesman,bulk.master.salesman,model_bulk_master,sales_team.group_sale_salesman,1,0,0,0
-access_bulk_master_stock_user,bulk.master.stock.user,model_bulk_master,stock.group_stock_user,1,1,1,0
-access_bulk_master_stock_manager,bulk.master.stock.manager,model_bulk_master,stock.group_stock_manager,1,1,1,1
-access_master_account_bank_statement_line,access_master_account_bank_statement_line,model_master_account_bank_statement_line,,1,0,0,0
-access_master_account_bank_statement,access_master_account_bank_statement,model_master_account_bank_statement,,1,0,0,0
