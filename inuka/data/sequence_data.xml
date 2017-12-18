@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <record id="seq_bulk_master" model="ir.sequence">
+            <field name="name">Bulk Master</field>
+            <field name="code">bulk.master</field>
+            <field name="prefix">BULK/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="account_reconcile_model" model="account.reconcile.model">
+            <field name="name">Reconcile Model</field>
+            <field name="account_id" search="[('code', '=', '101200')]"/>
+        </record>
+
+    </data>
+</odoo>
