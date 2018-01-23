@@ -158,6 +158,7 @@ class AccountBankStatementImport(models.TransientModel):
                 # see https://github.com/odoo/odoo/issues/3003
                 'balance_start': float(account.statement.balance) - total_amt,
                 'balance_end_real': account.statement.balance,
+                'name': fields.Datetime.now()
             })
 
         if account_lst and len(account_lst) == 1:
@@ -1172,3 +1173,23 @@ class MasterAccountBankStatementLine(models.Model):
             line.bank_stmt_line_id.master_bank_stmt_line_id = line.id
             line.bank_stmt_line_id.statement_reconciled = True
         return True
+
+    @api.multi
+    def manual_unreconcile(self):
+        for line in self.filtered(lambda r: r.statement_reconciled == True):
+            line.statement_reconciled = False
+            line.bank_stmt_line_id.master_bank_stmt_line_id = False
+            line.bank_stmt_line_id.statement_reconciled = False
+            line.bank_stmt_line_id = False
+        return True
+
+
+class AccountReconcileModel(models.Model):
+    _inherit = "account.reconcile.model"
+
+    @api.model
+    def get_record_id(self):
+        if self.env.user.company_id.name == 'INUKA Namibia':
+            return self.env.ref('inuka.account_reconcile_model_2').id
+        else:
+            return self.env.ref('inuka.account_reconcile_model_1').id

@@ -11,3 +11,5 @@ from . import stock
 from . import account_bank_statement
 from . import account_journal
 from . import helpdesk
+from . import bank_reconciliation_report
+from . import rewards

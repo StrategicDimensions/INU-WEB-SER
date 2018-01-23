@@ -11,9 +11,9 @@ StatementAction.include({
 		var def = this._super.apply(this, arguments);
 		return def.then(function(){
             return self._rpc({
-                model: 'ir.model.data',
-                method: 'xmlid_to_res_id',
-                kwargs: {xmlid: 'inuka.account_reconcile_model'},
+                model: 'account.reconcile.model',
+                method: 'get_record_id',
+                // kwargs: {xmlid: 'inuka.account_reconcile_model'},
             }).then(function(res_id){
             	self.reconcileModelID = res_id;
             });

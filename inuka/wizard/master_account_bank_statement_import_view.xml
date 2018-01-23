@@ -94,18 +94,18 @@
                                 </div>
                                 <div>
                                     <a type="object" name="open_action">
-                                        <t t-if="journal_type == 'bank'">Bank Statements</t>
+                                        <t t-if="journal_type == 'bank'">Transaction Lists</t>
                                         <t t-if="journal_type == 'cash'">Cash Statements</t>
                                     </a>
                                     <a type="object" name="open_master_bank_statements">
-                                        <t t-if="journal_type == 'bank'">Master Bank Statements</t>
+                                        <t t-if="journal_type == 'bank'">Bank Statements</t>
                                     </a>
                                 </div>
                                 <div>
-                                    <a type="object" name="open_action_with_context" context="{'action_name': 'action_bank_statement_line', 'search_default_journal': True}">Search Operations</a>
+                                    <a type="object" name="open_action_with_context" context="{'action_name': 'action_bank_statement_line', 'search_default_journal': True}">Search Transactions</a>
                                 </div>
                                 <div>
-                                    <a type="object" name="open_master_action_with_context" context="{'action_name': 'action_master_bank_statement_line', 'search_default_journal': True}">Master Search Operations</a>
+                                    <a type="object" name="open_master_action_with_context" context="{'action_name': 'action_master_bank_statement_line', 'search_default_journal': True}">Search Bank Statements</a>
                                 </div>
                                 <div>
                                     <a type="object" name="open_action" context="{'action_name': 'action_account_moves_all_a'}" groups="base.group_no_one">Journal Items</a>
@@ -140,8 +140,8 @@
                                     <span>Reconciliation</span>
                                 </div>
                                 <div>
-                                    <a t-if="dashboard.number_to_reconcile > 0" type="object" name="action_open_reconcile">Reconcile</a>
-                                    <span t-if="dashboard.number_to_reconcile == 0" class="text-muted">Nothing to Reconcile</span>
+                                    <a t-if="dashboard.number_to_reconcile > 0" type="object" name="action_open_reconcile">Allocate</a>
+                                    <span t-if="dashboard.number_to_reconcile == 0" class="text-muted">Nothing to Allocate</span>
                                 </div>
                                 <div>
                                     <a type="object" name="open_action_with_context" context="{'action_name': 'action_account_reconcile_model', 'use_domain': True}" groups="account.group_account_manager">Reconciliation Models</a>
@@ -262,16 +262,16 @@
                             - If there are statements to reconcile, a link to reconcile them -->
                         <div class="col-xs-6 o_kanban_primary_left">
                             <t t-if="dashboard.number_to_reconcile > 0">
-                                <button type="object" name="action_open_reconcile" class="btn btn-primary btn-sm"> Reconcile <t t-esc="dashboard.number_to_reconcile"/> Items</button>
+                                <button type="object" name="action_open_reconcile" class="btn btn-primary btn-sm"> Allocate <t t-esc="dashboard.number_to_reconcile"/> Items</button>
                             </t>
                             <t t-if="journal_type == 'bank'">
                                 <div name="bank_journal_default_cta" t-if="dashboard.bank_statements_source == 'undefined'">
-                                    <button t-if="dashboard.number_to_reconcile == 0" type="object" name="create_bank_statement" class="btn btn-primary btn-sm">New Statement</button>
-                                    <a t-if="dashboard.number_to_reconcile > 0" type="object" name="create_bank_statement" class="oe_inline">New Statement</a>
+                                    <button t-if="dashboard.number_to_reconcile == 0" type="object" name="create_bank_statement" class="btn btn-primary btn-sm">New Transaction List</button>
+                                    <a t-if="dashboard.number_to_reconcile > 0" type="object" name="create_bank_statement" class="oe_inline">New Transaction List</a>
                                 </div>
                                 <div name="bank_journal_cta" t-if="dashboard.bank_statements_source != 'undefined'">
-                                    <button t-if="dashboard.bank_statements_source == 'manual' &amp;&amp; dashboard.number_to_reconcile == 0" type="object" name="create_bank_statement" class="btn btn-primary btn-sm">New Statement</button>
-                                    <a t-if="dashboard.bank_statements_source == 'manual' &amp;&amp; dashboard.number_to_reconcile > 0" type="object" name="create_bank_statement" class="oe_inline">New Statement</a>
+                                    <button t-if="dashboard.bank_statements_source == 'manual' &amp;&amp; dashboard.number_to_reconcile == 0" type="object" name="create_bank_statement" class="btn btn-primary btn-sm">New Transaction List</button>
+                                    <a t-if="dashboard.bank_statements_source == 'manual' &amp;&amp; dashboard.number_to_reconcile > 0" type="object" name="create_bank_statement" class="oe_inline">New Transaction List</a>
                                 </div>
                             </t>
                             <t t-if="dashboard.number_to_reconcile > 0">
@@ -293,7 +293,7 @@
                             </div>
                             <div class="row" name="latest_statement" t-if="dashboard.last_balance != dashboard.account_balance">
                                 <div class="col-xs-6">
-                                    <span title="Latest Statement">Latest Statement</span>
+                                    <span title="Latest Statement">Latest Transaction List</span>
                                 </div>
                                 <div class="col-xs-6 text-right">
                                     <span><t t-esc="dashboard.last_balance"/></span>
@@ -352,6 +352,92 @@
         </field>
     </record>
 
+    <!-- Only replace the label if in the group ; groups cannot be placed on a xpath tag -->
+    <record model="ir.ui.view" id="account_reports.account_reports_journal_dashboard_kanban_view_account_manager">
+        <field name="name">account.journal.dashboard.kanban.reports</field>
+        <field name="model">account.journal</field>
+        <field name="groups_id" eval="[(4,ref('account.group_account_manager'))]"/>
+        <field name="inherit_id" ref="account.account_journal_dashboard_kanban_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='latest_statement']" position="replace">
+                <div name="latest_statement" class="row">
+                    <div class="col-xs-6">
+                        <span title="Latest Statement">Latest Transaction List</span>
+                    </div>
+                    <div class="col-xs-6 text-right">
+                        <span><t t-esc="dashboard.last_balance"/></span>
+                    </div>
+                </div><div class="row" t-if="dashboard.difference">
+                    <div class="col-xs-6">
+                        <a type="action" name="%(account_reports.action_account_report_bank_reconciliation_with_journal)d">Difference</a>
+                    </div>
+                    <div class="col-xs-6 text-right">
+                        <span><t t-esc="dashboard.difference"/></span>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="account.action_bank_statement_tree" model="ir.actions.act_window">
+        <field name="name">Transaction Lists</field>
+        <field name="res_model">account.bank.statement</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form,pivot,graph</field>
+        <field name="domain">[('journal_id.type', '=', 'bank')]</field>
+        <field name="context">{'journal_type':'bank'}</field>
+        <field name="search_view_id" ref="account.view_bank_statement_search"/>
+        <field name="help" type="html">
+          <p class="oe_view_nocontent_create">
+            Click to register a bank statement.
+          </p><p>
+            A bank statement is a summary of all financial transactions
+            occurring over a given period of time on a bank account. You
+            should receive this periodicaly from your bank.
+          </p><p>
+            Odoo allows you to reconcile a statement line directly with
+            the related sale or puchase invoices.
+          </p>
+        </field>
+    </record>
+
+    <record id="account.action_bank_statement_line" model="ir.actions.act_window">
+        <field name="name">Transaction Line</field>
+        <field name="res_model">account.bank.statement.line</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+        <field name="search_view_id" ref="account.view_bank_statement_line_search"/>
+        <field name="help" type="html">
+          <p>
+            A bank statement line is a financial transaction on a bank account.
+          </p><p>
+            Odoo allows you to reconcile a statement line directly with
+            the related sale or puchase invoice(s).
+          </p>
+        </field>
+    </record>
+
+    <record id="account.view_bank_statement_line_tree" model="ir.ui.view">
+        <field name="name">account.bank.statement.line.tree</field>
+        <field name="model">account.bank.statement.line</field>
+        <field name="priority">8</field>
+        <field name="arch" type="xml">
+            <tree string="Statement lines" create="false">
+                <field name="sequence" readonly="1" invisible="1"/>
+                <field name="statement_id" string="Transaction List"/>
+                <field name="journal_id" invisible="1" />
+                <field name="date"/>
+                <field name="name"/>
+                <field name="ref"/>
+                <field name="partner_id"/>
+                <field name="amount"/>
+                <field name="journal_currency_id" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
     <record model="ir.ui.view" id="master_account_reports_journal_dashboard_kanban_view">
         <field name="name">master.account.journal.dashboard.kanban.reports</field>
         <field name="model">account.journal</field>
@@ -371,21 +457,21 @@
         <field name="inherit_id" ref="account.account_journal_dashboard_kanban_view"/>
         <field name="arch" type="xml">
             <xpath expr='//div[@name="bank_journal_default_cta"]' position='inside'>
-                <br t-if="dashboard.number_to_reconcile == 0"/><button t-if="dashboard.number_to_reconcile == 0" type="object" name="import_statement" class="btn btn-primary btn-sm">Import Statement</button>
-                <a t-if="dashboard.number_to_reconcile > 0" type="object" name="import_statement" class="oe_inline">Import Statement</a>
-                <br t-if="dashboard.number_to_reconcile == 0"/><button t-if="dashboard.number_to_reconcile == 0" type="object" name="import_master_statement" class="btn btn-primary btn-sm">Import Final Statement</button>
-                <a t-if="dashboard.number_to_reconcile > 0" type="object" name="import_master_statement" class="oe_inline">Import Final Statement</a>
+                <br t-if="dashboard.number_to_reconcile == 0"/><button t-if="dashboard.number_to_reconcile == 0" type="object" name="import_statement" class="btn btn-primary btn-sm">Import Transaction List</button>
+                <a t-if="dashboard.number_to_reconcile > 0" type="object" name="import_statement" class="oe_inline">Import Transaction List</a>
+                <br t-if="dashboard.number_to_reconcile == 0"/><button t-if="dashboard.number_to_reconcile == 0" type="object" name="import_master_statement" class="btn btn-primary btn-sm">Import Statement</button>
+                <a t-if="dashboard.number_to_reconcile > 0" type="object" name="import_master_statement" class="oe_inline">Import Statement</a>
             </xpath>
             <xpath expr='//div[@name="bank_journal_cta"]' position='inside'>
-                <button t-if="dashboard.bank_statements_source == 'file_import' &amp;&amp; dashboard.number_to_reconcile == 0" type="object" name="import_statement" class="btn btn-primary btn-sm">Import Statement</button>
-                <a t-if="dashboard.bank_statements_source == 'file_import' &amp;&amp; dashboard.number_to_reconcile > 0" type="object" name="import_statement" class="oe_inline">Import Statement</a>
-                <button t-if="dashboard.bank_statements_source == 'file_import' &amp;&amp; dashboard.number_to_reconcile == 0" type="object" name="import_master_statement" class="btn btn-primary btn-sm">Import Final Statement</button>
-                <a t-if="dashboard.bank_statements_source == 'file_import' &amp;&amp; dashboard.number_to_reconcile > 0" type="object" name="import_master_statement" class="oe_inline">Import Final Statement</a>
+                <button t-if="dashboard.bank_statements_source == 'file_import' &amp;&amp; dashboard.number_to_reconcile == 0" type="object" name="import_statement" class="btn btn-primary btn-sm">Import Transaction List</button>
+                <a t-if="dashboard.bank_statements_source == 'file_import' &amp;&amp; dashboard.number_to_reconcile > 0" type="object" name="import_statement" class="oe_inline">Import Transaction List</a>
+                <button t-if="dashboard.bank_statements_source == 'file_import' &amp;&amp; dashboard.number_to_reconcile == 0" type="object" name="import_master_statement" class="btn btn-primary btn-sm">Import Statement</button>
+                <a t-if="dashboard.bank_statements_source == 'file_import' &amp;&amp; dashboard.number_to_reconcile > 0" type="object" name="import_master_statement" class="oe_inline">Import Statement</a>
             </xpath>
             <xpath expr='//div[@name="bank_cash_commands"]' position="after">
                 <t t-if="journal_type == 'bank'">
-                    <a type="object" name="import_statement">Import Statement</a>
-                    <a type="object" name="import_master_statement">Import Final Statement</a>
+                    <a type="object" name="import_statement">Import Transaction List</a><br/>
+                    <a type="object" name="import_master_statement">Import Statement</a>
                 </t>
             </xpath>
         </field>

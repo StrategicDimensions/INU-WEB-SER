@@ -3,13 +3,12 @@
 
 {
     'name': 'Inuka',
-    'version': '1.1',
     'category': 'Purchases',
     'sequence': 60,
     'summary': 'Inuka',
     'description': "",
     'website': 'https://www.odoo.com/',
-    'depends': ['purchase', 'delivery', 'base_automation', 'sms_frame', 'payment_mygate', 'account_bank_statement_import_ofx', 'inuka_pos', 'helpdesk'],
+    'depends': ['crm', 'purchase', 'delivery', 'base_automation', 'sms_frame', 'payment_mygate', 'account_bank_statement_import_ofx', 'inuka_pos', 'helpdesk', 'project'],
     'data': [
         'security/ir.model.access.csv',
         'security/inuka_security.xml',
@@ -26,10 +25,15 @@
         'views/report_invoice_document_inherited_for_pv.xml',
         'views/report_saleorder_document_inherited_for_pv.xml',
         'views/bulk_master_views.xml',
+        'views/rewards_views.xml',
         'wizard/account_invoice_validate_view.xml',
         'wizard/master_account_bank_statement_import_view.xml',
         'views/report_bulk_view.xml',
-        'views/helpdesk_ticket_views.xml'
+        'views/helpdesk_ticket_views.xml',
+        'wizard/partner_watchlist_comment_view.xml',
+    ],
+    'qweb': [
+        "static/src/xml/account_reconciliation.xml",
     ],
     'test': [
     ],

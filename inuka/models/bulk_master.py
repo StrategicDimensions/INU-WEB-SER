@@ -41,6 +41,7 @@ class BulkMaster(models.Model):
     sale_order_count = fields.Integer(compute="_compute_sale_order_count", string="Sale Orders")
     delivery_count = fields.Integer(compute='_compute_picking_ids', string='Delivery Orders')
     free_shipping = fields.Boolean("Free Shipping", readonly=True)
+    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.user.company_id)
 
     def _compute_order_totals(self):
         for bulk in self:

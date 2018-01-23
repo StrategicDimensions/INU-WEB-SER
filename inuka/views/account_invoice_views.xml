@@ -25,6 +25,9 @@
         <field name="model">account.invoice</field>
         <field name="inherit_id" ref="account.invoice_form"/>
         <field name="arch" type="xml">
+            <field name="team_id" position="after">
+                <field name="sale_date"/>
+            </field>
             <xpath expr="//notebook/page[1]/field[@name='invoice_line_ids']/tree/field[@name='quantity']" position="after">
                 <field name="unit_pv" string="Unit PV" readonly="1" force_save="1"/>
                 <field name="pv" string="PV's" readonly="1" force_save="1"/>
@@ -48,8 +51,8 @@
             </button>
             <xpath expr="//notebook/page[@name='statement_line_ids']/field[@name='line_ids']/tree/field[@name='ref']" position="after">
                 <field name="fitid"/>
-                <field name="branch"/>
-                <field name="master_bank_stmt_line_id" readonly="1"/>
+                <field name="branch" string="Payment Type"/>
+                <field name="master_bank_stmt_line_id" readonly="1" string="Statement Line"/>
                 <field name="statement_reconciled" reaadonly="1"/>
             </xpath>
         </field>
@@ -161,8 +164,8 @@
                                      attrs="{'readonly' : [('journal_entry_ids', '!=', [])] }"/>
                                 <field name="ref" attrs="{'readonly' : [('journal_entry_ids', '!=', [])] }" groups="base.group_no_one"/>
                                 <field name="fitid"/>
-                                <field name="branch"/>
-                                <field name="bank_stmt_line_id" readonly="1"/>
+                                <field name="branch" string="Payment Type"/>
+                                <field name="bank_stmt_line_id" readonly="1" string="Transaction Line"/>
                                 <field name="statement_reconciled" reaadonly="1"/>
                                 <field name="amount" attrs="{'readonly' : [('journal_entry_ids', '!=', [])] }"/>
                                 <field name="journal_currency_id" invisible="1"/>
@@ -187,7 +190,7 @@
     </record>
 
     <record id="action_master_bank_statement_tree" model="ir.actions.act_window">
-        <field name="name">Master Bank Statements</field>
+        <field name="name">Bank Statements</field>
         <field name="res_model">master.account.bank.statement</field>
         <field name="view_type">form</field>
         <field name="view_mode">tree,form,pivot,graph</field>
@@ -241,7 +244,7 @@
         <field name="inherit_id" ref="account.view_bank_statement_line_tree"/>
         <field name="arch" type="xml">
             <field name="partner_id" position="after">
-                <field name="master_bank_stmt_line_id"/>
+                <field name="master_bank_stmt_line_id" string="Bank Statement Lines"/>
                 <field name="statement_reconciled"/>
             </field>
         </field>
@@ -296,13 +299,14 @@
                 <field name="statement_reconciled"/>
                 <field name="amount"/>
                 <field name="journal_currency_id" invisible="1"/>
-                <button name="manual_reconcile" string="Reconcile" type="object" class="oe_highlight"/>
+                <button name="manual_reconcile" string="Reconcile" type="object" class="oe_highlight" attrs="{'invisible': [('statement_reconciled', '=', True)]}"/>
+                <button name="manual_unreconcile" string="Unreconcile" type="object" class="oe_highlight" attrs="{'invisible': [('statement_reconciled', '=', False)]}"/>
             </tree>
         </field>
     </record>
 
     <record id="action_master_bank_statement_line" model="ir.actions.act_window">
-        <field name="name">Master Bank Statement Lines</field>
+        <field name="name">Bank Statement Lines</field>
         <field name="res_model">master.account.bank.statement.line</field>
         <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>

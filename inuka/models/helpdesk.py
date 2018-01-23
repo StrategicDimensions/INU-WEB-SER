@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import base64
+import zipfile
+import os
+from io import BytesIO
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
+from odoo.tools.osutil import tempdir
 
 
 class HelpdeskTicket(models.Model):
@@ -43,6 +48,60 @@ class HelpdeskTicket(models.Model):
         }
 
     @api.multi
+    def import_bank_statement(self):
+        journal_id = self.env['account.journal'].search([('name', '=', 'FNB')], limit=1).id
+        stage = self.env['helpdesk.stage'].search([('name', '=', 'Solved')], limit=1)
+        for ticket in self:
+            attachments = self.env['ir.attachment'].search([('res_id', '=', ticket.id), ('res_model', '=', 'helpdesk.ticket')])
+
+            for attachment in attachments:
+                fp = BytesIO()
+                fp.write(base64.b64decode(attachment.datas))
+                if not zipfile.is_zipfile(fp):
+                    raise UserError(_('File is not a zip file!'))
+                if zipfile.is_zipfile(fp):
+                    with zipfile.ZipFile(fp, "r") as z:
+                        with tempdir() as module_dir:
+                            import odoo.modules.module as module
+                            try:
+                                module.ad_paths.append(module_dir)
+                                z.extractall(module_dir)
+                                for d in os.listdir(module_dir):
+                                    extract_file = z.open(d)
+                                    new_rec = self.env['account.bank.statement.import'].with_context(journal_id=journal_id).create({'data_file': base64.b64encode(extract_file.read()), 'filename': 'test'})
+                                    new_rec.import_file()
+                                    ticket.write({'stage_id': stage.id})
+                            finally:
+                                module.ad_paths.remove(module_dir)
+
+    @api.multi
+    def import_master_bank_statement(self):
+        journal_id = self.env['account.journal'].search([('name', '=', 'FNB')], limit=1).id
+        stage = self.env['helpdesk.stage'].search([('name', '=', 'Solved')], limit=1)
+        for ticket in self:
+            attachments = self.env['ir.attachment'].search([('res_id', '=', ticket.id), ('res_model', '=', 'helpdesk.ticket')])
+
+            for attachment in attachments:
+                fp = BytesIO()
+                fp.write(base64.b64decode(attachment.datas))
+                if not zipfile.is_zipfile(fp):
+                    raise UserError(_('File is not a zip file!'))
+                if zipfile.is_zipfile(fp):
+                    with zipfile.ZipFile(fp, "r") as z:
+                        with tempdir() as module_dir:
+                            import odoo.modules.module as module
+                            try:
+                                module.ad_paths.append(module_dir)
+                                z.extractall(module_dir)
+                                for d in os.listdir(module_dir):
+                                    extract_file = z.open(d)
+                                    new_rec = self.env['master.account.bank.statement.import'].with_context(journal_id=journal_id).create({'data_file': base64.b64encode(extract_file.read()), 'filename': 'test'})
+                                    new_rec.import_file()
+                                    ticket.write({'stage_id': stage.id})
+                            finally:
+                                module.ad_paths.remove(module_dir)
+
+    @api.multi
     def view_sale_orders(self):
         self.ensure_one()
         orders = self.env['sale.order'].search([('ticket_id', '=', self.id)])
@@ -68,3 +127,16 @@ class SaleOrder(models.Model):
     _inherit = "sale.order"
 
     ticket_id = fields.Many2one("helpdesk.ticket", string="Tickets")
+
+
+class IrAttachment(models.Model):
+    _inherit = 'ir.attachment'
+
+    @api.model
+    def create(self, vals):
+        res = super(IrAttachment, self).create(vals)
+        if res.res_model == 'helpdesk.ticket' and 'FNB RSA OFX' in res.res_name and 'Hourly' in res.res_name:
+            self.env['helpdesk.ticket'].browse(res.res_id).import_bank_statement()
+        elif res.res_model == 'helpdesk.ticket' and 'FNB RSA OFX' in res.res_name and 'Hourly' not in res.res_name:
+            self.env['helpdesk.ticket'].browse(res.res_id).import_master_bank_statement()
+        return res

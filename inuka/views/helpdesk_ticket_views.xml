@@ -20,7 +20,7 @@
                 <field name="mobile"/>
                 <field name="is_close" invisible="1"/>
             </field>
-            <xpath expr="//sheet/group" position="after">
+            <field name="description" position="after">
                 <notebook>
                     <page string="Products">
                         <field name="product_ids">
@@ -35,7 +35,7 @@
                         </field>
                     </page>
                 </notebook>
-            </xpath>
+            </field>
         </field>
     </record>
 

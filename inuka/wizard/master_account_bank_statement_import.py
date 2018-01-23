@@ -65,6 +65,7 @@ class MasterAccountBankStatementImport(models.TransientModel):
         stmts_vals = self._complete_stmts_vals(stmts_vals, journal, account_number)
         # Create the bank statements
         statement_ids, notifications = self._create_bank_statements(stmts_vals)
+        self.env['master.account.bank.statement'].browse(statement_ids).reconcile_master_statement()
         # Now that the import worked out, set it as the bank_statements_source of the journal
         journal.bank_statements_source = 'file_import'
         # Finally dispatch to reconciliation interface

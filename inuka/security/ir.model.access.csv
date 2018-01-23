@@ -5,3 +5,9 @@ access_bulk_master_stock_user,bulk.master.stock.user,model_bulk_master,stock.gro
 access_bulk_master_stock_manager,bulk.master.stock.manager,model_bulk_master,stock.group_stock_manager,1,1,1,1
 access_master_account_bank_statement_line,access_master_account_bank_statement_line,model_master_account_bank_statement_line,,1,0,0,0
 access_master_account_bank_statement,access_master_account_bank_statement,model_master_account_bank_statement,,1,0,0,0
+access_performance_history,access_performance_history,model_performance_history,,1,0,0,0
+access_inuka_reward_user,inuka.reward.user,model_inuka_reward,account.group_account_user,1,0,0,0
+access_inuka_reward_invoice,inuka.reward.invoice,model_inuka_reward,account.group_account_invoice,1,0,0,0
+access_inuka_reward_manager,inuka.reward.manager,model_inuka_reward,account.group_account_manager,1,1,1,1
+access_reward_category,access_reward_category,model_reward_category,,1,0,0,0
+access_achievement_level,access_achievement_level,model_achievement_level,,1,0,0,0

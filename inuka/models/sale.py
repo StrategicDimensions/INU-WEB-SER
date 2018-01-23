@@ -87,6 +87,7 @@ class SaleOrder(models.Model):
 
     @api.model
     def create(self, vals):
+        channel = self.env['mail.channel'].search([('name', 'like', 'Escalations')], limit=1)
         res = super(SaleOrder, self).create(vals)
         if res.partner_id.mobile:
             sms_template = self.env.ref('sms_frame.sms_template_inuka_international')
@@ -99,6 +100,8 @@ class SaleOrder(models.Model):
                 'sms_content': """ INUKA thanks you for your order %s, an SMS with details will follow when your order (Ref: %s) is dispatched^More info on 27219499850""" %(res.partner_id.name, res.name)
             })
             msg_compose.send_entity()
+        if res.partner_id.watchlist:
+            res.message_subscribe(channel_ids=[channel.id])
         return res
 
     @api.multi
@@ -153,6 +156,12 @@ class SaleOrder(models.Model):
             msg += "</ul>"
             order.message_post(body=msg)
 
+    @api.multi
+    def _prepare_invoice(self):
+        res = super(SaleOrder, self)._prepare_invoice()
+        res['sale_date'] = self.sale_date
+        return res
+
 
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
@@ -190,3 +199,4 @@ class ReservedFund(models.Model):
     order_id = fields.Many2one('sale.order', readonly=True, requied=True)
     customer_id = fields.Many2one('res.partner', readonly=True, requied=True)
     active = fields.Boolean(default=True, readonly=True)
+    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.user.company_id)

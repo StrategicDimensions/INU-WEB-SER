@@ -16,7 +16,7 @@
             <tr class="border-black">
                 <td><strong>Total PV's</strong></td>
                 <td class="text-right">
-                    <span t-field="doc.total_pv" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"/>
+                    <span t-field="doc.total_pv"/>
                 </td>
             </tr>
         </xpath>
