@@ -676,7 +676,7 @@ class ResPartner(models.Model):
         ticket_type = self.env['helpdesk.ticket.type'].search([('name', '=', 'Birthday')], limit=1)
         channel = self.env['mail.channel'].search([('name', '=', 'Escalations')], limit=1)
         customers = self.search([('customer', '=', True), ('status', 'in', ('emerald', 'sapphire', 'diamond', 'double_diamond', 'triple_diamond', 'exective_diamond', 'presidential'))])
-        today = datetime.today()
+        today = datetime.today() + relativedelta(days=1)
         for customer in customers:
             if customer.dob:
                 dob = datetime.strptime(customer.dob, DF)
@@ -692,7 +692,8 @@ class ResPartner(models.Model):
                         'partner_email': customer.email,
                         'ticket_type_id': ticket_type.id,
                     })
-                    ticket.message_subscribe(channel_ids=[channel.id])
+                    if channel:
+                        ticket.message_subscribe(channel_ids=[channel.id])
 
     @api.multi
     def create_helpdesk_ticket(self):

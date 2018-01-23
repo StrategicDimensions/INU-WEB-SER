@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import api, models
+from odoo import api, fields, models
 
 
 class AccountJournal(models.Model):
@@ -38,3 +38,9 @@ class AccountJournal(models.Model):
             action['domain'] = ['|', ('journal_id', '=', self.id), ('journal_id', '=', False)]
             action['name'] += ' for journal ' + self.name
         return action
+
+
+class AccountJournal(models.Model):
+    _inherit = "account.journal"
+
+    default_statement_account_id = fields.Many2one("account.account", string="Default Statement Account", domain=[('deprecated', '=', False)])

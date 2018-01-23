@@ -323,4 +323,15 @@
         </field>
     </record>
 
+    <record id="view_account_journal_form_inherit_inuka" model="ir.ui.view">
+        <field name="name">account.journal.form.inherit.inuka</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.view_account_journal_form"/>
+        <field name="arch" type="xml">
+            <field name="default_credit_account_id" position="after">
+                <field name="default_statement_account_id"/>
+            </field>
+        </field>
+    </record>
+
 </odoo>

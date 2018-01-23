@@ -287,14 +287,14 @@ for record in records:
 Pricelist = env['product.pricelist']
 for partner in records:
   company = partner.company_id.name
-  if partner.status == 'new':
+  if partner.status in ('candidate', 'new'):
     if company == 'INUKA':
       pricelist = Pricelist.search([('name', '=', 'New Pricelist')], limit=1)
     else:
       pricelist = Pricelist.search([('name', '=', 'New Pricelist (Namibia)')], limit=1)
     partner.write({'property_product_pricelist': pricelist.id})
 
-  elif partner.status != 'new':
+  elif partner.status not in ('candidate', 'new'):
     if company == 'INUKA':
       pricelist = Pricelist.search([('name', '=', 'Established Pricelist')], limit=1)
     else:

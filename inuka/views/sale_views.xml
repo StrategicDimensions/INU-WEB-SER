@@ -54,6 +54,9 @@
             <xpath expr="//field[@name='payment_term_id']" position="after">
                 <field name="pv" required="True"/>
             </xpath>
+            <field name="team_id" position="attributes">
+                <attribute name="string">Sales Team</attribute>
+            </field>
             <xpath expr="//sheet/group" position="after">
                 <group>
                     <group>
