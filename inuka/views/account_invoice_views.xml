@@ -47,7 +47,7 @@
         <field name="inherit_id" ref="account.view_bank_statement_form"/>
         <field name="arch" type="xml">
             <button name="check_confirm_bank" position="before">
-                <button name="auto_match_partner" string="Auto Match" type="object" class="oe_highlight" states="open"/>
+                <button name="auto_match_partner" string="Match Partner" type="object" class="oe_highlight" states="open"/>
             </button>
             <xpath expr="//notebook/page[@name='statement_line_ids']/field[@name='line_ids']/tree/field[@name='ref']" position="after">
                 <field name="fitid"/>
@@ -299,6 +299,7 @@
                 <field name="statement_reconciled"/>
                 <field name="amount"/>
                 <field name="journal_currency_id" invisible="1"/>
+                <field name="move_id" readonly="1"/>
                 <button name="manual_reconcile" string="Reconcile" type="object" class="oe_highlight" attrs="{'invisible': [('statement_reconciled', '=', True)]}"/>
                 <button name="manual_unreconcile" string="Unreconcile" type="object" class="oe_highlight" attrs="{'invisible': [('statement_reconciled', '=', False)]}"/>
             </tree>

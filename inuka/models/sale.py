@@ -1,6 +1,9 @@
 # -*- coding:utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+from datetime import date, datetime
+from dateutil.relativedelta import relativedelta
+
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 from odoo.tools.float_utils import float_compare
@@ -8,6 +11,9 @@ from odoo.tools.float_utils import float_compare
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
+
+    def _default_expiry_date(self):
+        return date.today() + relativedelta(days=90)
 
     @api.depends('order_line','order_line.pv')
     def _compute_tot_pv(self):
@@ -57,6 +63,14 @@ class SaleOrder(models.Model):
     ], compute="_compute_delivery_status", string="Delivery Status", store=True)
     bulk_master_id = fields.Many2one("bulk.master", string="Bulk", readonly=True, states={'draft': [('readonly', False)], 'sent': [('readonly', False)]})
     kit_order = fields.Boolean("Kit Order", readonly=True)
+    validity_date = fields.Date(string='Expiration Date', readonly=True, copy=False, states={'draft': [('readonly', False)], 'sent': [('readonly', False)]},
+        help="Manually set the expiration date of your quotation (offer), or it will set the date automatically based on the template if online quotation is installed.", default=_default_expiry_date)
+    channel = fields.Selection([
+        ('front', 'Front Office'),
+        ('admin', 'Admin'),
+        ('portal', 'Online Portal'),
+        ('mobile', 'Mobile Application'),
+    ], string="Channel")
 
     @api.depends('state', 'order_line', 'order_line.qty_delivered', 'order_line.product_uom_qty')
     def _compute_delivery_status(self):

@@ -6,14 +6,38 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
+            <field name="company_type" position="attributes">
+                <attribute name="attrs">{'invisible': [('customer', '=', True)]}</attribute>
+            </field>
+            <field name="parent_id" position="attributes">
+                <attribute name="attrs">{'invisible': [('customer', '=', True)]}</attribute>
+            </field>
+            <field name="street" position="attributes">
+                <attribute name="required">1</attribute>
+            </field>
+            <field name="city" position="attributes">
+                <attribute name="required">1</attribute>
+            </field>
+            <field name="state_id" position="attributes">
+                <attribute name="required">1</attribute>
+            </field>
+            <field name="zip" position="attributes">
+                <attribute name="required">1</attribute>
+            </field>
+            <field name="country_id" position="attributes">
+                <attribute name="required">1</attribute>
+            </field>
             <field name="user_id" position="attributes">
                 <attribute name="string">Mentor</attribute>
             </field>
+            <field name="mobile" position="attributes">
+                <attribute name="required">1</attribute>
+            </field>
             <field name="type" position="before">
                 <field name="first_name" attrs="{'invisible': [('customer', '=', False)], 'required': [('customer', '=', True)]}"/>
-                <field name="passport_no" attrs="{'invisible': [('customer', '=', False)], 'required': [('customer', '=', True)]}"/>
-                <field name="join_date" attrs="{'invisible': [('customer', '=', False)]}"/>
-                <field name="dob" attrs="{'invisible': [('customer', '=', False)]}"/>
+                <field name="passport_no" attrs="{'invisible': [('customer', '=', False)]}"/>
+                <field name="join_date" attrs="{'invisible': [('customer', '=', False)], 'required': [('customer', '=', True)]}"/>
+                <field name="dob" attrs="{'invisible': [('customer', '=', False)], 'required': [('customer', '=', True)]}"/>
                 <field name="is_admin" invisible="1"/>
             </field>
             <field name="function" position="before">
@@ -25,6 +49,7 @@
             <field name="lang" position="after">
                 <field name="upline" domain="[('customer', '=', True)]" attrs="{'invisible': [('customer', '=', False)], 'required': [('customer', '=', True)]}"/>
                 <field name="upline_id" attrs="{'invisible': [('customer', '=', False)], 'required': [('customer', '=', True)]}"/>
+                <field name="kit" attrs="{'invisible': ['|', ('customer', '=', False), ('status', 'not in', ('candidate'))]}"/>
             </field>
             <field name="vat" position="replace"/>
             <field name="function" position="replace"/>
@@ -44,7 +69,7 @@
                 <header>
                     <button name="action_watchlist_add" type="object" string="Add Watchlist" attrs="{'invisible':['|',('watchlist', '=', True),('customer', '=', False)]}" class="btn-primary"/>
                     <button name="action_watchlist_remove" type="object" string="Remove Watchlist" attrs="{'invisible':['|',('watchlist', '=', False),('customer', '=', False)]}" class="btn-primary"/>
-                    <field name="status" widget="statusbar" statusbar_visible="candidate,new,junior,senior,pearl,ruby,emerald,sapphire,diamond,double_diamond,triple_diamond,exective_diamond,presidential" attrs="{'invisible':[('customer', '=', False)]}"/>
+                    <field name="status" widget="statusbar" clickable="True" statusbar_visible="candidate,new,junior,senior,pearl,ruby,emerald,sapphire,diamond,double_diamond,triple_diamond,exective_diamond,presidential" attrs="{'invisible':[('customer', '=', False)]}"/>
                 </header>
             </xpath>
             <field name="trust" position="after">
@@ -298,7 +323,6 @@
                 <page string="Other Info" name="other_info" attrs="{'invisible': [('customer', '=', False)]}">
                     <group>
                         <group>
-                            <field name="kit"/>
                             <field name="watchlist"/>
                         </group>
                         <group>

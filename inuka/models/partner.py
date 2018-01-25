@@ -63,7 +63,7 @@ class ResPartner(models.Model):
         ('junior', 'Junior kit'),
         ('senior', 'Senior kit'),
         ('not_indicated', 'Kit Not Indicated')
-        ], string='Kit', required=True, default='small')
+        ], string='Kit', required=True)
     source = fields.Selection([
         ('email', 'Email'),
         ('facebook', 'Facebook'),
@@ -200,11 +200,11 @@ class ResPartner(models.Model):
     ], string="Device Type", readonly=True)
     is_device_live = fields.Boolean("Is Device Live", readonly=True)
 
-#     _sql_constraints = [
-#         ('mobile_uniq', 'unique(mobile)', 'Mobile should be unique.'),
-#         ('email_uniq', 'unique(email)', 'Email should be unique.'),
-#         ('ref_uniq', 'unique(ref)', 'Internal Reference should be unique.'),
-#     ]
+    _sql_constraints = [
+        ('mobile_uniq', 'unique(mobile)', 'Mobile should be unique.'),
+        ('email_uniq', 'unique(email)', 'Email should be unique.'),
+        ('ref_uniq', 'unique(ref)', 'Internal Reference should be unique.'),
+    ]
 
     @api.model
     def get_month_interval(self, current_date):
@@ -495,25 +495,25 @@ class ResPartner(models.Model):
             else:
                 partner.is_admin = False
 
-#     @api.constrains('dob')
-#     def _check_dob(self):
-#         for partner in self:
-#             if partner.dob:
-#                 dob = datetime.strptime(partner.dob, DF)
-#                 today = date.today()
-#                 age = relativedelta(today, dob)
-#                 if age.years < 18:
-#                     raise ValidationError(_('Member should be 18 years and above.'))
-# 
-#     @api.constrains('mobile')
-#     def _check_mobile(self):
-#         for partner in self:
-#             if partner.mobile:
-#                 if ' ' in partner.mobile:
-#                     raise ValidationError(_('Mobile Number should not have any space.'))
-#                 mobile = partner.mobile.replace(' ', '')
-#                 if len(mobile) < 11:
-#                     raise ValidationError(_('Mobile Number should not be less than 11 digits.'))
+    @api.constrains('dob')
+    def _check_dob(self):
+        for partner in self:
+            if partner.dob:
+                dob = datetime.strptime(partner.dob, DF)
+                today = date.today()
+                age = relativedelta(today, dob)
+                if age.years < 18:
+                    raise ValidationError(_('Member should be 18 years and above.'))
+
+    @api.constrains('mobile')
+    def _check_mobile(self):
+        for partner in self:
+            if partner.mobile:
+                if ' ' in partner.mobile:
+                    raise ValidationError(_('Mobile Number should not have any space.'))
+                mobile = partner.mobile.replace(' ', '')
+                if len(mobile) < 11:
+                    raise ValidationError(_('Mobile Number should not be less than 11 digits.'))
 
     @api.onchange('first_name', 'last_name')
     def _onchange_first_name(self):

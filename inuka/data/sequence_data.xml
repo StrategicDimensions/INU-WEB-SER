@@ -10,17 +10,5 @@
             <field name="company_id" eval="False"/>
         </record>
 
-        <record id="account_reconcile_model_1" model="account.reconcile.model">
-            <field name="name">Receivable</field>
-            <field name="account_id" search="[('code', '=', '9000/510'), ('company_id.name', '=', 'INUKA')]"/>
-            <field name="company_id" search="['|', ('name', '=', 'INUKA'), ('id', '=', 1)]"/>
-        </record>
-
-        <record id="account_reconcile_model_2" model="account.reconcile.model">
-            <field name="name">Receivable</field>
-            <field name="account_id" search="[('code', '=', '9000/510'), ('company_id', '=', 'INUKA Namibia')]"/>
-            <field name="company_id" search="['|', ('name', '=', 'INUKA Namibia'), ('id', '=', 1)]"/>
-        </record>
-
     </data>
 </odoo>

@@ -480,12 +480,45 @@ class MasterAccountBankStatement(models.Model):
     @api.multi
     def reconcile_master_statement(self):
         BankStatementLine = self.env['account.bank.statement.line']
+        AccountMove = self.env['account.move']
+        AccountMoveLine = self.env['account.move.line']
         for statement in self:
             for line in statement.line_ids:
                 statment_line = BankStatementLine.search([('ref', '=', line.ref)], limit=1)
                 if statment_line:
                     statment_line.write({'statement_reconciled': True, 'master_bank_stmt_line_id': line.id})
                     line.write({'statement_reconciled': True, 'bank_stmt_line_id': statment_line.id})
+
+                    if not line.statement_id.journal_id.default_statement_account_id:
+                        raise UserError(_("Please select Default Statement Account in Journal"))
+                    if not line.statement_id.journal_id.default_credit_account_id:
+                        raise UserError(_("Please select Default Credit Account in Journal"))
+
+                    move = AccountMove.create({
+                        'date': line.date,
+                        'ref': line.ref,
+                        'journal_id': line.statement_id.journal_id.id,
+                        'line_ids': [(0, 0,
+                            {
+                                'account_id': line.statement_id.journal_id.default_statement_account_id.id,
+                                'partner_id': line.partner_id.id,
+                                'name': line.name,
+                                'debit': line.amount,
+                                'credit': 0.0,
+                                'date_maturity': line.date,
+                            }),
+                            (0, 0, {
+                                'account_id': line.statement_id.journal_id.default_credit_account_id.id,
+                                'partner_id': line.partner_id.id,
+                                'name': line.name,
+                                'debit': 0.0,
+                                'credit': line.amount,
+                                'date_maturity': line.date,
+                            }
+                        )]
+                    })
+                    move.post()
+                    line.move_id = move
 
 
 class MasterAccountBankStatementLine(models.Model):
@@ -522,6 +555,7 @@ class MasterAccountBankStatementLine(models.Model):
     branch = fields.Char("Branch")
     statement_reconciled = fields.Boolean("Reconciled", readonly=True)
     bank_stmt_line_id = fields.Many2one("account.bank.statement.line", "Statement Line")
+    move_id = fields.Many2one('account.move', string='Journal Entry')
 
     @api.one
     @api.constrains('amount')
@@ -1166,12 +1200,45 @@ class MasterAccountBankStatementLine(models.Model):
 
     @api.multi
     def manual_reconcile(self):
+        AccountMove = self.env['account.move']
+        AccountMoveLine = self.env['account.move.line']
         for line in self.filtered(lambda r: r.statement_reconciled == False):
             if not line.bank_stmt_line_id:
                 raise UserError(_('Please select a bank statement line to reconcile.'))
             line.statement_reconciled = True
             line.bank_stmt_line_id.master_bank_stmt_line_id = line.id
             line.bank_stmt_line_id.statement_reconciled = True
+
+            if not line.statement_id.journal_id.default_statement_account_id:
+                raise UserError(_("Please select Default Statement Account in Journal"))
+            if not line.statement_id.journal_id.default_credit_account_id:
+                raise UserError(_("Please select Default Credit Account in Journal"))
+
+            move = AccountMove.create({
+                'date': line.date,
+                'ref': line.ref,
+                'journal_id': line.statement_id.journal_id.id,
+                'line_ids': [(0, 0,
+                    {
+                        'account_id': line.statement_id.journal_id.default_statement_account_id.id,
+                        'partner_id': line.partner_id.id,
+                        'name': line.name,
+                        'debit': line.amount,
+                        'credit': 0.0,
+                        'date_maturity': line.date,
+                    }),
+                    (0, 0, {
+                        'account_id': line.statement_id.journal_id.default_credit_account_id.id,
+                        'partner_id': line.partner_id.id,
+                        'name': line.name,
+                        'debit': 0.0,
+                        'credit': line.amount,
+                        'date_maturity': line.date,
+                    }
+                )]
+            })
+            move.post()
+            line.move_id = move
         return True
 
     @api.multi
@@ -1181,6 +1248,10 @@ class MasterAccountBankStatementLine(models.Model):
             line.bank_stmt_line_id.master_bank_stmt_line_id = False
             line.bank_stmt_line_id.statement_reconciled = False
             line.bank_stmt_line_id = False
+
+            if line.move_id:
+                res = line.move_id.reverse_moves(fields.Date.context_today(self), False)
+                line.write({'move_id': res and res[0] or False})
         return True
 
 

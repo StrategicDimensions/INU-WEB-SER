@@ -52,10 +52,13 @@
                 </button>
             </button>
             <xpath expr="//field[@name='payment_term_id']" position="after">
-                <field name="pv" required="True"/>
+                <field name="pv" required="True" force_save="1"/>
             </xpath>
             <field name="team_id" position="attributes">
                 <attribute name="string">Sales Team</attribute>
+            </field>
+            <field name="team_id" position="after">
+                <field name="channel"/>
             </field>
             <xpath expr="//sheet/group" position="after">
                 <group>
@@ -67,7 +70,7 @@
                         <field name="paid"/>
                     </group>
                     <group>
-                        <field name="order_total" required="True"/>
+                        <field name="order_total" required="True" force_save="1"/>
                         <field name="product_cost"/>
                         <field name="shipping_cost"/>
                         <field name="order_status"/>
