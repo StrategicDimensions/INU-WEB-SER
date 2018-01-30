@@ -49,7 +49,7 @@
             <field name="lang" position="after">
                 <field name="upline" domain="[('customer', '=', True)]" attrs="{'invisible': [('customer', '=', False)], 'required': [('customer', '=', True)]}"/>
                 <field name="upline_id" attrs="{'invisible': [('customer', '=', False)], 'required': [('customer', '=', True)]}"/>
-                <field name="kit" attrs="{'invisible': ['|', ('customer', '=', False), ('status', 'not in', ('candidate'))]}"/>
+                <field name="kit" attrs="{'invisible': ['|', ('customer', '=', False), ('status', 'not in', ('candidate'))], 'required': [('customer', '=', True)]}"/>
             </field>
             <field name="vat" position="replace"/>
             <field name="function" position="replace"/>

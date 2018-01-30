@@ -229,4 +229,72 @@
         action="inuka.action_reserved_fund_form"
         sequence="9"/>
 
+    <record id="view_sale_upload_form" model="ir.ui.view">
+        <field name="name">sale.upload.form</field>
+        <field name="model">sale.upload</field>
+        <field name="arch" type="xml">
+            <form string="Sale Upload">
+            <header>
+                <button name="button_start" string="Start" type="object" states="new" class="btn-primary"/>
+                <button name="button_cancel" string="Cancel" type="object" states="new,inprogress" class="btn-primary"/>
+                <field name="state" widget="statusbar" statusbar_visible="new,inprogress,completed,error,cancelled"/>
+            </header>
+            <sheet>
+                <div class="oe_title">
+                    <h1>
+                        <field name="name"/>
+                    </h1>
+                </div>
+                <group>
+                    <group>
+                        <field name="start_time" readonly="1"/>
+                        <field name="duration"/>
+                    </group>
+                    <group>
+                        <field name="end_time" readonly="1"/>
+                        <field name="create_date" string="Date" readonly="1"/>
+                    </group>
+                </group>
+                <group>
+                    <field name="file" filename="name"/>
+                </group>
+                <label for="result"/>
+                <div>
+                    <field name="result" readonly="1"/>
+                </div>
+            </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_sale_upload_tree" model="ir.ui.view">
+        <field name="name">sale.upload.tree</field>
+        <field name="model">sale.upload</field>
+        <field name="arch" type="xml">
+            <tree string="Sale Upload">
+                <field name="name"/>
+                <field name="create_date" string="Date"/>
+                <field name="start_time"/>
+                <field name="end_time"/>
+                <field name="duration"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_sale_upload_form" model="ir.actions.act_window">
+        <field name="name">Sales Upload</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sale.upload</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+          <p class="oe_view_nocontent_create">
+            Click to add Sales Upload.
+          </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_sale_upload" name="Sales Upload" action="action_sale_upload_form" parent="crm.crm_menu_config" sequence="10" groups="base.group_system"/>
+
 </odoo>

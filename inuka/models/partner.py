@@ -63,7 +63,7 @@ class ResPartner(models.Model):
         ('junior', 'Junior kit'),
         ('senior', 'Senior kit'),
         ('not_indicated', 'Kit Not Indicated')
-        ], string='Kit', required=True)
+        ], string='Kit')
     source = fields.Selection([
         ('email', 'Email'),
         ('facebook', 'Facebook'),
@@ -613,7 +613,7 @@ class ResPartner(models.Model):
         res = super(ResPartner, self).create(vals)
         if res.customer and not context.get('from_user', False):
             sale_order_vals = res._prepare_sale_order()
-            order = self.env['sale.order'].create(sale_order_vals)
+            order = self.env['sale.order'].with_context(kit_order=True).create(sale_order_vals)
             sale_order_line_vals = res._prepare_sale_order_line(order)
             if sale_order_line_vals:
                 self.env['sale.order.line'].create(sale_order_line_vals)

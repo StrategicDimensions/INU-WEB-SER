@@ -1,6 +1,9 @@
 # -*- coding:utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import base64
+import io
+import xlrd
 from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 
@@ -101,6 +104,9 @@ class SaleOrder(models.Model):
 
     @api.model
     def create(self, vals):
+        context = dict(self.env.context or {})
+        if not context.get('kit_order'):
+            raise UserError(_("You cannot create an order for a Candidate."))
         channel = self.env['mail.channel'].search([('name', 'like', 'Escalations')], limit=1)
         res = super(SaleOrder, self).create(vals)
         if res.partner_id.mobile:
@@ -214,3 +220,102 @@ class ReservedFund(models.Model):
     customer_id = fields.Many2one('res.partner', readonly=True, requied=True)
     active = fields.Boolean(default=True, readonly=True)
     company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.user.company_id)
+
+
+class SaleUpload(models.Model):
+    _name = "sale.upload"
+    _description = "Sale Upload"
+
+    name = fields.Char("Name")
+    state = fields.Selection([
+        ('new', 'New'),
+        ('inprogress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('error', 'Error'),
+        ('cancelled', 'Cancelled'),
+        ], string='Status', default='new')
+    start_time = fields.Datetime("Start Time", default=lambda self: fields.Datetime.now())
+    end_time = fields.Datetime("End Time")
+    duration = fields.Integer(compute="_compute_duration", string="Duration")
+    result = fields.Text()
+    file = fields.Binary()
+
+    def _compute_duration(self):
+        for record in self:
+            start_time = fields.Datetime.from_string(record.start_time)
+            end_time = fields.Datetime.from_string(record.end_time)
+            duration = 0
+            if start_time and end_time:
+                duration = (end_time - start_time).total_seconds()
+            record.duration = duration
+
+    @api.multi
+    def button_start(self):
+        self.ensure_one()
+        self.state = 'inprogress'
+        self.start_time = fields.Datetime.now(self)
+        self.import_data()
+        self.end_time = fields.Datetime.now(self)
+        self.state = 'completed'
+        return True
+
+    @api.multi
+    def button_cancel(self):
+        self.ensure_one()
+        self.state = 'cancelled'
+        return True
+
+    @api.multi
+    def import_data(self):
+        self.ensure_one()
+        Partner = self.env['res.partner']
+        file_data = base64.decodestring(self.file)
+        row_list = []
+
+        fp = io.BytesIO()
+        fp.write(file_data)
+        workbook = xlrd.open_workbook(file_contents=fp.getvalue())
+        sheet = workbook.sheet_by_index(0)
+        no_of_rows = sheet.nrows
+        row_list = []
+        keys = sheet.row_values(0)
+        for row in range(1, no_of_rows):
+            field = sheet.row_values(row)
+            values = dict(zip(keys, field))
+            row_list.append(values)
+
+        status_dict = {
+            'Candidate': 'candidate',
+            'New': 'new',
+            'Junior': 'junior',
+            'Senior': 'senior',
+            'Pearl': 'pearl',
+            'Ruby': 'ruby',
+            'Emerald': 'emerald',
+            'Sapphire': 'sapphire',
+            'Diamond': 'diamond',
+            'Double Diamond': 'double_diamond',
+            'Triple Diamond': 'triple_diamond',
+            'Exective Diamond': 'exective_diamond',
+            'Presidential': 'presidential',
+        }
+
+        record_count = status_count = 0
+        for data in row_list:
+            if data.get('MEMBERID'):
+                part = Partner.search([('ref', '=', data['MEMBERID'])], limit=1)
+                if part:
+                    sql_query ="""UPDATE res_partner SET personal_pv = %s,
+                                pv_downline_1 = %s, pv_downline_2 = %s,
+                                pv_downline_3 = %s, pv_downline_4 = %s,
+                                pv_tot_group = %s, personal_members = %s, new_members = %s WHERE ref = %s"""
+                    params = (data.get('PVPERS') or 0.0, data.get('PVDOWNLINE1') or 0.0, data.get('PVDOWNLINE2') or 0.0, data.get('PVDOWNLINE3') or 0.0, data.get('PVDOWNLINE4') or 0.0,
+                            data.get('PVTOTGROUP') or 0.0, data.get('ACTIVEPERSMEM') or 0, data.get('PERSNEWMEM') or 0, data.get('MEMBERID'))
+                    self.env.cr.execute(sql_query, params)
+                    record_count += 1
+
+                    if part.status != status_dict.get(data.get('STATUS')):
+                        part.write({'status': status_dict.get(data.get('STATUS'))})
+                        status_count += 1
+        self.result = """%s records updated, %s status change updated""" %(record_count, status_count)
+        return True
