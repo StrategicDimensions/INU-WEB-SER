@@ -3,7 +3,7 @@
 
 import base64
 import io
-import xlrd
+import csv
 from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 
@@ -105,7 +105,9 @@ class SaleOrder(models.Model):
     @api.model
     def create(self, vals):
         context = dict(self.env.context or {})
-        if not context.get('kit_order'):
+        partner_id = vals.get('partner_id')
+        status = self.env['res.partner'].browse(partner_id).status
+        if not context.get('kit_order') and status == 'candidate':
             raise UserError(_("You cannot create an order for a Candidate."))
         channel = self.env['mail.channel'].search([('name', 'like', 'Escalations')], limit=1)
         res = super(SaleOrder, self).create(vals)
@@ -120,7 +122,7 @@ class SaleOrder(models.Model):
                 'sms_content': """ INUKA thanks you for your order %s, an SMS with details will follow when your order (Ref: %s) is dispatched^More info on 27219499850""" %(res.partner_id.name, res.name)
             })
             msg_compose.send_entity()
-        if res.partner_id.watchlist:
+        if res.partner_id.watchlist and channel:
             res.message_subscribe(channel_ids=[channel.id])
         return res
 
@@ -130,11 +132,13 @@ class SaleOrder(models.Model):
 
     @api.multi
     def action_confirm(self):
-        super(SaleOrder, self).action_confirm()
         for order in self:
-            order.write({'pv': order.total_pv, 'order_total': order.amount_total})
+            res = order.carrier_id.rate_shipment(order)
+            order.get_delivery_price()
+            order.set_delivery_line()
+            order.write({'shipping_cost': res['price'],'pv': order.total_pv, 'order_total': order.amount_total})
             order.picking_ids.write({'bulk_master_id': order.bulk_master_id.id})
-        return True
+        return super(SaleOrder, self).action_confirm()
 
     @api.multi
     def action_cancel(self):
@@ -180,6 +184,7 @@ class SaleOrder(models.Model):
     def _prepare_invoice(self):
         res = super(SaleOrder, self)._prepare_invoice()
         res['sale_date'] = self.sale_date
+        res['channel'] = self.channel
         return res
 
 
@@ -255,8 +260,6 @@ class SaleUpload(models.Model):
         self.state = 'inprogress'
         self.start_time = fields.Datetime.now(self)
         self.import_data()
-        self.end_time = fields.Datetime.now(self)
-        self.state = 'completed'
         return True
 
     @api.multi
@@ -269,18 +272,21 @@ class SaleUpload(models.Model):
     def import_data(self):
         self.ensure_one()
         Partner = self.env['res.partner']
-        file_data = base64.decodestring(self.file)
         row_list = []
 
-        fp = io.BytesIO()
-        fp.write(file_data)
-        workbook = xlrd.open_workbook(file_contents=fp.getvalue())
-        sheet = workbook.sheet_by_index(0)
-        no_of_rows = sheet.nrows
-        row_list = []
-        keys = sheet.row_values(0)
-        for row in range(1, no_of_rows):
-            field = sheet.row_values(row)
+        try:
+            data = base64.b64decode(self.file)
+            file_input = io.StringIO(data.decode("utf-8"))
+            file_input.seek(0)
+            reader = csv.reader(file_input, delimiter=',', lineterminator='\r\n')
+            reader_info = []
+            reader_info.extend(reader)
+            keys = reader_info[0]
+        except Exception as e:
+            raise UserError(_("Invalid file. \n Note: file must be csv" % tools.ustr(e)))
+
+        for row in range(1, len(reader_info)):
+            field = reader_info[row]
             values = dict(zip(keys, field))
             row_list.append(values)
 
@@ -305,17 +311,23 @@ class SaleUpload(models.Model):
             if data.get('MEMBERID'):
                 part = Partner.search([('ref', '=', data['MEMBERID'])], limit=1)
                 if part:
-                    sql_query ="""UPDATE res_partner SET personal_pv = %s,
-                                pv_downline_1 = %s, pv_downline_2 = %s,
-                                pv_downline_3 = %s, pv_downline_4 = %s,
-                                pv_tot_group = %s, personal_members = %s, new_members = %s WHERE ref = %s"""
-                    params = (data.get('PVPERS') or 0.0, data.get('PVDOWNLINE1') or 0.0, data.get('PVDOWNLINE2') or 0.0, data.get('PVDOWNLINE3') or 0.0, data.get('PVDOWNLINE4') or 0.0,
-                            data.get('PVTOTGROUP') or 0.0, data.get('ACTIVEPERSMEM') or 0, data.get('PERSNEWMEM') or 0, data.get('MEMBERID'))
-                    self.env.cr.execute(sql_query, params)
-                    record_count += 1
+                    try:
+                        sql_query ="""UPDATE res_partner SET personal_pv = %s,
+                                    pv_downline_1 = %s, pv_downline_2 = %s,
+                                    pv_downline_3 = %s, pv_downline_4 = %s,
+                                    pv_tot_group = %s, personal_members = %s, new_members = %s WHERE ref = %s"""
+                        params = (data.get('PVPERS') or 0.0, data.get('PVDOWNLINE1') or 0.0, data.get('PVDOWNLINE2') or 0.0, data.get('PVDOWNLINE3') or 0.0, data.get('PVDOWNLINE4') or 0.0,
+                                data.get('PVTOTGROUP') or 0.0, data.get('ACTIVEPERSMEM') or 0, data.get('PERSNEWMEM') or 0, data.get('MEMBERID'))
+                        self.env.cr.execute(sql_query, params)
+                        record_count += 1
 
-                    if part.status != status_dict.get(data.get('STATUS')):
-                        part.write({'status': status_dict.get(data.get('STATUS'))})
-                        status_count += 1
-        self.result = """%s records updated, %s status change updated""" %(record_count, status_count)
+                        if part.status != status_dict.get(data.get('STATUS')):
+                            part.write({'status': status_dict.get(data.get('STATUS'))})
+                            status_count += 1
+                    except Exception as e:
+                        result = """Error: %s""" %(str(e))
+                        self.write({'result': result, 'end_time': fields.Datetime.now(self), 'state': 'error'})
+                        return True
+        result = """%s records updated, %s status change updated""" %(record_count, status_count)
+        self.write({'result': result, 'end_time': fields.Datetime.now(self), 'state': 'completed'})
         return True

@@ -81,6 +81,9 @@
                 <field name="unit_pv" string="Unit PV" readonly="1" force_save="1"/>
                 <field name="pv" string="PV's" readonly="1" force_save="1"/>
             </xpath>
+            <xpath expr="//notebook/page[1]/field[@name='order_line']/tree/field[@name='name']" position="attributes">
+                <attribute name="invisible">True</attribute>
+            </xpath>
             <xpath expr="//field[@name='amount_total']" position="after">
                 <label for="total_pv" string="Total PV's" style="color: red;"/>
                 <div>
@@ -164,6 +167,17 @@
             <field name="invoice_status" position="after">
                 <field name="delivery_status"/>
                 <field name="state"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_order_form_with_carrier_inherit_inuka" model="ir.ui.view">
+        <field name="name">sale.order.form.with.carrier.inherit.inuka</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="delivery.view_order_form_with_carrier"/>
+        <field name="arch" type="xml">
+            <field name="carrier_id" position="attributes">
+                <attribute name="required">True</attribute>
             </field>
         </field>
     </record>

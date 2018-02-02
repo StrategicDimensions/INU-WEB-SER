@@ -763,7 +763,7 @@ class ResPartner(models.Model):
     def view_downline_member(self):
         self.ensure_one()
         partners = self.search([('upline', '=', self.id), ('customer', '=', True)])
-        view_id = self.env.ref('base.view_partner_tree').id
+        view_id = self.env.ref('inuka.view_res_partner_downline_tree').id
 
         return {
             'name': _('Downline'),

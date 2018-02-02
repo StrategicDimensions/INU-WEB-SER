@@ -22,6 +22,12 @@ class AccountInvoice(models.Model):
     payment_reference = fields.Char("Payment Reference", states={'draft': [('readonly', False)]})
     approved_for_payment = fields.Boolean("Approved for Payment", readonly=True, copy=False)
     sale_date = fields.Date('Sale Date', track_visibility='onchange')
+    channel = fields.Selection([
+        ('front', 'Front Office'),
+        ('admin', 'Admin'),
+        ('portal', 'Online Portal'),
+        ('mobile', 'Mobile Application'),
+    ], string="Channel")
 
     @api.depends('invoice_line_ids','invoice_line_ids.pv')
     def _compute_tot_pv(self):

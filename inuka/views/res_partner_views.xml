@@ -1,6 +1,288 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <record id="view_res_partner_property_form_inherit_inuka" model="ir.ui.view">
+        <field name="name">res.partner.property.form.inherit.inuka</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="account.view_partner_property_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_watchlist_add" type="object" string="Add Watchlist" attrs="{'invisible':['|',('watchlist', '=', True),('customer', '=', False)]}" class="btn-primary"/>
+                    <button name="action_watchlist_remove" type="object" string="Remove Watchlist" attrs="{'invisible':['|',('watchlist', '=', False),('customer', '=', False)]}" class="btn-primary"/>
+                </header>
+            </xpath>
+            <field name="category_id" position="after">
+                <field name="status" attrs="{'invisible':[('customer', '=', False)]}"/>
+            </field>
+            <field name="trust" position="after">
+                <field name="credit_limit"/>
+            </field>
+            <page name="accounting_disabled" position="after">
+                <page string="Roles" name="roles" attrs="{'invisible': [('customer', '=', False)]}">
+                    <group>
+                        <group>
+                            <field name="candidate_registrar"/>
+                            <field name="up_front_kits"/>
+                        </group>
+                        <group>
+                            <field name="bulk_custodian"/>
+                        </group>
+                    </group>
+                </page>
+                <page string="MTD Performance" name="member" attrs="{'invisible': [('customer', '=', False)]}">
+                    <separator string="PV Performance"/>
+                    <group>
+                        <group>
+                            <field name="personal_pv" string="Personal PV (MTD)" readonly="1"/>
+                            <field name="pv_downline_1" string="PV Downline 1 (MTD)" readonly="1"/>
+                            <field name="pv_downline_2" string="PV Downline 2 (MTD)" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="pv_tot_group" string="Group PV (MTD)" readonly="1"/>
+                            <field name="pv_downline_3" string="PV Downline 3 (MTD)" readonly="1"/>
+                            <field name="pv_downline_4" string="PV Downline 4 (MTD)" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Recruiting">
+                            <field name="new_members" string="# of New Members (MTD)" readonly="1"/>
+                            <field name="new_junior_recruits" readonly="1"/>
+                            <field name="new_senior_recruits" readonly="1"/>
+                        </group>
+                        <group string="Downline Activity">
+                            <field name="personal_members" string="# of Active Downline (MTD)" readonly="1"/>
+                            <field name="vr_earner" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Member Activity">
+                            <field name="is_active_mtd" readonly="1"/>
+                            <field name="is_vr_earner_mtd" readonly="1"/>
+                            <field name="is_new_mtd" readonly="1"/>
+                            <field name="is_new_junior_mtd" readonly="1"/>
+                            <field name="is_new_senior_mtd" readonly="1"/>
+                            <field name="is_new_ruby_mtd" readonly="1"/>
+                        </group>
+                        <group>
+                        </group>
+                    </group>
+                </page>
+                <page string="QTD Performance" attrs="{'invisible': [('customer', '=', False)]}">
+                    <separator string="PV Performance"/>
+                    <group>
+                        <group>
+                            <field name="personal_pv_qtd" readonly="1"/>
+                            <field name="pv_downline_1_qtd" readonly="1"/>
+                            <field name="pv_downline_2_qtd" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="pv_tot_group_qtd" readonly="1"/>
+                            <field name="pv_downline_3_qtd" readonly="1"/>
+                            <field name="pv_downline_4_qtd" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Recruiting">
+                            <field name="new_members_qtd" readonly="1"/>
+                            <field name="new_junior_recruits_qtd" readonly="1"/>
+                            <field name="new_senior_recruits_qtd" readonly="1"/>
+                        </group>
+                        <group string="Downline Activity">
+                            <field name="personal_members_qtd" readonly="1"/>
+                            <field name="vr_earner_qtd" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Member Activity">
+                            <field name="is_active_qtd" readonly="1"/>
+                            <field name="is_vr_earner_qtd" readonly="1"/>
+                            <field name="is_new_qtd" readonly="1"/>
+                            <field name="is_new_junior_qtd" readonly="1"/>
+                            <field name="is_new_senior_qtd" readonly="1"/>
+                            <field name="is_new_ruby_qtd" readonly="1"/>
+                        </group>
+                        <group>
+                        </group>
+                    </group>
+                </page>
+                <page string="YTD Performance" attrs="{'invisible': [('customer', '=', False)]}">
+                    <separator string="PV Performance"/>
+                    <group>
+                        <group>
+                            <field name="personal_pv_ytd" readonly="1"/>
+                            <field name="pv_downline_1_ytd" readonly="1"/>
+                            <field name="pv_downline_2_ytd" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="pv_tot_group_ytd" readonly="1"/>
+                            <field name="pv_downline_3_ytd" readonly="1"/>
+                            <field name="pv_downline_4_ytd" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Recruiting">
+                            <field name="new_members_ytd" readonly="1"/>
+                            <field name="new_junior_recruits_ytd" readonly="1"/>
+                            <field name="new_senior_recruits_ytd" readonly="1"/>
+                        </group>
+                        <group string="Downline Activity">
+                            <field name="personal_members_ytd" readonly="1"/>
+                            <field name="vr_earner_ytd" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Member Activity">
+                            <field name="is_active_ytd" readonly="1"/>
+                            <field name="is_vr_earner_ytd" readonly="1"/>
+                            <field name="is_new_ytd" readonly="1"/>
+                            <field name="is_new_junior_ytd" readonly="1"/>
+                            <field name="is_new_senior_ytd" readonly="1"/>
+                            <field name="is_new_ruby_ytd" readonly="1"/>
+                        </group>
+                        <group>
+                        </group>
+                    </group>
+                </page>
+                <page string="MTD (Odoo)" attrs="{'invisible': [('customer', '=', False)]}">
+                    <separator string="PV Performance"/>
+                    <group>
+                        <group>
+                            <field name="o_personal_pv_mtd" readonly="1"/>
+                            <field name="o_pv_downline_1_mtd" readonly="1"/>
+                            <field name="o_pv_downline_2_mtd" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="o_pv_tot_group_mtd" readonly="1"/>
+                            <field name="o_pv_downline_3_mtd" readonly="1"/>
+                            <field name="o_pv_downline_4_mtd" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Recruiting">
+                            <field name="o_new_members_mtd" readonly="1"/>
+                            <field name="o_new_junior_recruits_mtd" readonly="1"/>
+                            <field name="o_new_senior_recruits_mtd" readonly="1"/>
+                        </group>
+                        <group string="Downline Activity">
+                            <field name="o_personal_members_mtd" readonly="1"/>
+                            <field name="o_vr_earner_mtd" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Member Activity">
+                            <field name="o_is_active_mtd" readonly="1"/>
+                            <field name="o_is_vr_earner_mtd" readonly="1"/>
+                            <field name="o_is_new_mtd" readonly="1"/>
+                            <field name="o_is_new_junior_mtd" readonly="1"/>
+                            <field name="o_is_new_senior_mtd" readonly="1"/>
+                            <field name="o_is_new_ruby_mtd" readonly="1"/>
+                        </group>
+                        <group>
+                        </group>
+                    </group>
+                </page>
+                <page string="QTD (Odoo)" attrs="{'invisible': [('customer', '=', False)]}">
+                    <separator string="PV Performance"/>
+                    <group>
+                        <group>
+                            <field name="o_personal_pv_qtd" readonly="1"/>
+                            <field name="o_pv_downline_1_qtd" readonly="1"/>
+                            <field name="o_pv_downline_2_qtd" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="o_pv_tot_group_qtd" readonly="1"/>
+                            <field name="o_pv_downline_3_qtd" readonly="1"/>
+                            <field name="o_pv_downline_4_qtd" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Recruiting">
+                            <field name="o_new_members_qtd" readonly="1"/>
+                            <field name="o_new_junior_recruits_qtd" readonly="1"/>
+                            <field name="o_new_senior_recruits_qtd" readonly="1"/>
+                        </group>
+                        <group string="Downline Activity">
+                            <field name="o_personal_members_qtd" readonly="1"/>
+                            <field name="o_vr_earner_qtd" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Member Activity">
+                            <field name="o_is_active_qtd" readonly="1"/>
+                            <field name="o_is_vr_earner_qtd" readonly="1"/>
+                            <field name="o_is_new_qtd" readonly="1"/>
+                            <field name="o_is_new_junior_qtd" readonly="1"/>
+                            <field name="o_is_new_senior_qtd" readonly="1"/>
+                            <field name="o_is_new_ruby_qtd" readonly="1"/>
+                        </group>
+                        <group>
+                        </group>
+                    </group>
+                </page>
+                <page string="YTD (Odoo)" attrs="{'invisible': [('customer', '=', False)]}">
+                    <separator string="PV Performance"/>
+                    <group>
+                        <group>
+                            <field name="o_personal_pv_ytd" readonly="1"/>
+                            <field name="o_pv_downline_1_ytd" readonly="1"/>
+                            <field name="o_pv_downline_2_ytd" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="o_pv_tot_group_ytd" readonly="1"/>
+                            <field name="o_pv_downline_3_ytd" readonly="1"/>
+                            <field name="o_pv_downline_4_ytd" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Recruiting">
+                            <field name="o_new_members_ytd" readonly="1"/>
+                            <field name="o_new_junior_recruits_ytd" readonly="1"/>
+                            <field name="o_new_senior_recruits_ytd" readonly="1"/>
+                        </group>
+                        <group string="Downline Activity">
+                            <field name="o_personal_members_ytd" readonly="1"/>
+                            <field name="o_vr_earner_ytd" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Member Activity">
+                            <field name="o_is_active_ytd" readonly="1"/>
+                            <field name="o_is_vr_earner_ytd" readonly="1"/>
+                            <field name="o_is_new_ytd" readonly="1"/>
+                            <field name="o_is_new_junior_ytd" readonly="1"/>
+                            <field name="o_is_new_senior_ytd" readonly="1"/>
+                            <field name="o_is_new_ruby_ytd" readonly="1"/>
+                        </group>
+                        <group>
+                        </group>
+                    </group>
+                </page>
+                <page string="Device Info" name="device_info" attrs="{'invisible': [('customer', '=', False)]}">
+                    <group>
+                        <group>
+                            <field name="device_id"/>
+                            <field name="is_device_live"/>
+                        </group>
+                        <group>
+                            <field name="device_type"/>
+                        </group>
+                    </group>
+                </page>
+                <page string="Other Info" name="other_info" attrs="{'invisible': [('customer', '=', False)]}">
+                    <group>
+                        <group>
+                            <field name="watchlist"/>
+                        </group>
+                        <group>
+                            <field name="source"/>
+                        </group>
+                    </group>
+                </page>
+            </page>
+        </field>
+    </record>
+
     <record id="view_res_partner_form_inherit_inuka" model="ir.ui.view">
         <field name="name">res.partner.form.inherit.inuka</field>
         <field name="model">res.partner</field>
@@ -60,277 +342,23 @@
         </field>
     </record>
 
-    <record id="view_res_partner_property_form_inherit_inuka" model="ir.ui.view">
-        <field name="name">res.partner.property.form.inherit.inuka</field>
+    <record id="view_res_partner_downline_tree" model="ir.ui.view">
+        <field name="name">res.partner.downline.tree</field>
         <field name="model">res.partner</field>
-        <field name="inherit_id" ref="account.view_partner_property_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//sheet" position="before">
-                <header>
-                    <button name="action_watchlist_add" type="object" string="Add Watchlist" attrs="{'invisible':['|',('watchlist', '=', True),('customer', '=', False)]}" class="btn-primary"/>
-                    <button name="action_watchlist_remove" type="object" string="Remove Watchlist" attrs="{'invisible':['|',('watchlist', '=', False),('customer', '=', False)]}" class="btn-primary"/>
-                    <field name="status" widget="statusbar" clickable="True" statusbar_visible="candidate,new,junior,senior,pearl,ruby,emerald,sapphire,diamond,double_diamond,triple_diamond,exective_diamond,presidential" attrs="{'invisible':[('customer', '=', False)]}"/>
-                </header>
-            </xpath>
-            <field name="trust" position="after">
-                <field name="credit_limit"/>
-            </field>
-            <page name="accounting_disabled" position="after">
-                <page string="Roles" name="roles" attrs="{'invisible': [('customer', '=', False)]}">
-                    <group>
-                        <group>
-                            <field name="candidate_registrar"/>
-                            <field name="up_front_kits"/>
-                        </group>
-                        <group>
-                            <field name="bulk_custodian"/>
-                        </group>
-                    </group>
-                </page>
-                <page string="MTD Performance" name="member" attrs="{'invisible': [('customer', '=', False)]}">
-                    <group>
-                        <group>
-                            <field name="personal_pv" string="Personal PV (MTD)" readonly="1"/>
-                            <field name="pv_downline_1" string="PV Downline 1 (MTD)" readonly="1"/>
-                            <field name="pv_downline_3" string="PV Downline 3 (MTD)" readonly="1"/>
-                        </group>
-                        <group>
-                            <field name="pv_tot_group" string="Group PV (MTD)" readonly="1"/>
-                            <field name="pv_downline_2" string="PV Downline 2 (MTD)" readonly="1"/>
-                            <field name="pv_downline_4" string="PV Downline 4 (MTD)" readonly="1"/>
-                        </group>
-                    </group>
-                    <group>
-                        <group>
-                            <field name="is_active_mtd" readonly="1"/>
-                            <field name="is_vr_earner_mtd" readonly="1"/>
-                            <field name="is_new_junior_mtd" readonly="1"/>
-                        </group>
-                        <group>
-                            <field name="is_new_mtd" readonly="1"/>
-                            <field name="is_new_senior_mtd" readonly="1"/>
-                            <field name="is_new_ruby_mtd" readonly="1"/>
-                        </group>
-                    </group>
-                    <group>
-                        <group>
-                            <field name="personal_members" string="# of Active Downline (MTD)" readonly="1"/>
-                            <field name="vr_earner" readonly="1"/>
-                            <field name="new_junior_recruits" readonly="1"/>
-                        </group>
-                        <group>
-                            <field name="new_members" string="# of New Members (MTD)" readonly="1"/>
-                            <field name="new_senior_recruits" readonly="1"/>
-                        </group>
-                    </group>
-                </page>
-                <page string="QTD Performance" attrs="{'invisible': [('customer', '=', False)]}">
-                    <group>
-                        <group>
-                            <field name="personal_pv_qtd" readonly="1"/>
-                            <field name="pv_downline_1_qtd" readonly="1"/>
-                            <field name="pv_downline_3_qtd" readonly="1"/>
-                        </group>
-                        <group>
-                            <field name="pv_tot_group_qtd" readonly="1"/>
-                            <field name="pv_downline_2_qtd" readonly="1"/>
-                            <field name="pv_downline_4_qtd" readonly="1"/>
-                        </group>
-                    </group>
-                    <group>
-                        <group>
-                            <field name="is_active_qtd" readonly="1"/>
-                            <field name="is_vr_earner_qtd" readonly="1"/>
-                            <field name="is_new_junior_qtd" readonly="1"/>
-                        </group>
-                        <group>
-                            <field name="is_new_qtd" readonly="1"/>
-                            <field name="is_new_senior_qtd" readonly="1"/>
-                            <field name="is_new_ruby_qtd" readonly="1"/>
-                        </group>
-                    </group>
-                    <group>
-                        <group>
-                            <field name="personal_members_qtd" readonly="1"/>
-                            <field name="vr_earner_qtd" readonly="1"/>
-                            <field name="new_junior_recruits_qtd" readonly="1"/>
-                        </group>
-                        <group>
-                            <field name="new_members_qtd" readonly="1"/>
-                            <field name="new_senior_recruits_qtd" readonly="1"/>
-                        </group>
-                    </group>
-                </page>
-                <page string="YTD Performance" attrs="{'invisible': [('customer', '=', False)]}">
-                    <group>
-                        <group>
-                            <field name="personal_pv_ytd" readonly="1"/>
-                            <field name="pv_downline_1_ytd" readonly="1"/>
-                            <field name="pv_downline_3_ytd" readonly="1"/>
-                        </group>
-                        <group>
-                            <field name="pv_tot_group_ytd" readonly="1"/>
-                            <field name="pv_downline_2_ytd" readonly="1"/>
-                            <field name="pv_downline_4_ytd" readonly="1"/>
-                        </group>
-                    </group>
-                    <group>
-                        <group>
-                            <field name="is_active_ytd" readonly="1"/>
-                            <field name="is_vr_earner_ytd" readonly="1"/>
-                            <field name="is_new_junior_ytd" readonly="1"/>
-                        </group>
-                        <group>
-                            <field name="is_new_ytd" readonly="1"/>
-                            <field name="is_new_senior_ytd" readonly="1"/>
-                            <field name="is_new_ruby_ytd" readonly="1"/>
-                        </group>
-                    </group>
-                    <group>
-                        <group>
-                            <field name="personal_members_ytd" readonly="1"/>
-                            <field name="vr_earner_ytd" readonly="1"/>
-                            <field name="new_junior_recruits_ytd" readonly="1"/>
-                        </group>
-                        <group>
-                            <field name="new_members_ytd" readonly="1"/>
-                            <field name="new_senior_recruits_ytd" readonly="1"/>
-                        </group>
-                    </group>
-                </page>
-                <page string="MTD (Odoo)" attrs="{'invisible': [('customer', '=', False)]}">
-                    <group>
-                        <group>
-                            <field name="o_personal_pv_mtd" readonly="1"/>
-                            <field name="o_pv_downline_1_mtd" readonly="1"/>
-                            <field name="o_pv_downline_3_mtd" readonly="1"/>
-                        </group>
-                        <group>
-                            <field name="o_pv_tot_group_mtd" readonly="1"/>
-                            <field name="o_pv_downline_2_mtd" readonly="1"/>
-                            <field name="o_pv_downline_4_mtd" readonly="1"/>
-                        </group>
-                    </group>
-                    <group>
-                        <group>
-                            <field name="o_is_active_mtd" readonly="1"/>
-                            <field name="o_is_vr_earner_mtd" readonly="1"/>
-                            <field name="o_is_new_junior_mtd" readonly="1"/>
-                        </group>
-                        <group>
-                            <field name="o_is_new_mtd" readonly="1"/>
-                            <field name="o_is_new_senior_mtd" readonly="1"/>
-                            <field name="o_is_new_ruby_mtd" readonly="1"/>
-                        </group>
-                    </group>
-                    <group>
-                        <group>
-                            <field name="o_personal_members_mtd" readonly="1"/>
-                            <field name="o_vr_earner_mtd" readonly="1"/>
-                            <field name="o_new_junior_recruits_mtd" readonly="1"/>
-                        </group>
-                        <group>
-                            <field name="o_new_members_mtd" readonly="1"/>
-                            <field name="o_new_senior_recruits_mtd" readonly="1"/>
-                        </group>
-                    </group>
-                </page>
-                <page string="QTD (Odoo)" attrs="{'invisible': [('customer', '=', False)]}">
-                    <group>
-                        <group>
-                            <field name="o_personal_pv_qtd" readonly="1"/>
-                            <field name="o_pv_downline_1_qtd" readonly="1"/>
-                            <field name="o_pv_downline_3_qtd" readonly="1"/>
-                        </group>
-                        <group>
-                            <field name="o_pv_tot_group_qtd" readonly="1"/>
-                            <field name="o_pv_downline_2_qtd" readonly="1"/>
-                            <field name="o_pv_downline_4_qtd" readonly="1"/>
-                        </group>
-                    </group>
-                    <group>
-                        <group>
-                            <field name="o_is_active_qtd" readonly="1"/>
-                            <field name="o_is_vr_earner_qtd" readonly="1"/>
-                            <field name="o_is_new_junior_qtd" readonly="1"/>
-                        </group>
-                        <group>
-                            <field name="o_is_new_qtd" readonly="1"/>
-                            <field name="o_is_new_senior_qtd" readonly="1"/>
-                            <field name="o_is_new_ruby_qtd" readonly="1"/>
-                        </group>
-                    </group>
-                    <group>
-                        <group>
-                            <field name="o_personal_members_qtd" readonly="1"/>
-                            <field name="o_vr_earner_qtd" readonly="1"/>
-                            <field name="o_new_junior_recruits_qtd" readonly="1"/>
-                        </group>
-                        <group>
-                            <field name="o_new_members_qtd" readonly="1"/>
-                            <field name="o_new_senior_recruits_qtd" readonly="1"/>
-                        </group>
-                    </group>
-                </page>
-                <page string="YTD (Odoo)" attrs="{'invisible': [('customer', '=', False)]}">
-                    <group>
-                        <group>
-                            <field name="o_personal_pv_ytd" readonly="1"/>
-                            <field name="o_pv_downline_1_ytd" readonly="1"/>
-                            <field name="o_pv_downline_3_ytd" readonly="1"/>
-                        </group>
-                        <group>
-                            <field name="o_pv_tot_group_ytd" readonly="1"/>
-                            <field name="o_pv_downline_2_ytd" readonly="1"/>
-                            <field name="o_pv_downline_4_ytd" readonly="1"/>
-                        </group>
-                    </group>
-                    <group>
-                        <group>
-                            <field name="o_is_active_ytd" readonly="1"/>
-                            <field name="o_is_vr_earner_ytd" readonly="1"/>
-                            <field name="o_is_new_junior_ytd" readonly="1"/>
-                        </group>
-                        <group>
-                            <field name="o_is_new_ytd" readonly="1"/>
-                            <field name="o_is_new_senior_ytd" readonly="1"/>
-                            <field name="o_is_new_ruby_ytd" readonly="1"/>
-                        </group>
-                    </group>
-                    <group>
-                        <group>
-                            <field name="o_personal_members_ytd" readonly="1"/>
-                            <field name="o_vr_earner_ytd" readonly="1"/>
-                            <field name="o_new_junior_recruits_ytd" readonly="1"/>
-                        </group>
-                        <group>
-                            <field name="o_new_members_ytd" readonly="1"/>
-                            <field name="o_new_senior_recruits_ytd" readonly="1"/>
-                        </group>
-                    </group>
-                </page>
-                <page string="Device Info" name="device_info" attrs="{'invisible': [('customer', '=', False)]}">
-                    <group>
-                        <group>
-                            <field name="device_id"/>
-                            <field name="is_device_live"/>
-                        </group>
-                        <group>
-                            <field name="device_type"/>
-                        </group>
-                    </group>
-                </page>
-                <page string="Other Info" name="other_info" attrs="{'invisible': [('customer', '=', False)]}">
-                    <group>
-                        <group>
-                            <field name="watchlist"/>
-                        </group>
-                        <group>
-                            <field name="source"/>
-                        </group>
-                    </group>
-                </page>
-            </page>
+            <tree string="Downline">
+                <field name="ref" string="Member ID"/>
+                <field name="display_name" string="Name"/>
+                <field name="status"/>
+                <field name="join_date"/>
+                <field name="state_id" string="Region"/>
+                <field name="personal_pv" string="Personal PV (MTD)"/>
+                <field name="pv_tot_group" string="Group PV (MTD)"/>
+                <field name="is_active_mtd"/>
+                <field name="personal_members" string="# of Active Downline (MTD)"/>
+                <field name="vr_earner"/>
+                <field name="new_members" string="# of New Members (MTD)"/>
+            </tree>
         </field>
     </record>
 
@@ -359,11 +387,16 @@
         <field name="inherit_id" ref="sale.res_partner_view_buttons"/>
         <field name="priority" eval="20"/>
         <field name="arch" type="xml">
-            <button name="%(sale.act_res_partner_2_sale_order)d" position="after">
+            <button name="%(crm.crm_lead_opportunities)d" position="before">
                 <button class="oe_stat_button" type="object" name="view_downline_member"
                     attrs="{'invisible': [('customer', '=', False)]}"
                     icon="fa-users">
                     <field string="Downline" name="downline_count" widget="statinfo"/>
+                </button>
+                <button class="oe_stat_button" type="object" name="view_project"
+                    attrs="{'invisible': [('customer', '=', False)]}"
+                    icon="fa-puzzle-piece">
+                    <field string="Mentorship" name="project_count" widget="statinfo"/>
                 </button>
                 <button class="oe_stat_button" type="object" name="view_rewards"
                     attrs="{'invisible': [('customer', '=', False)]}"
@@ -374,11 +407,6 @@
                     attrs="{'invisible': [('customer', '=', False)]}"
                     icon="fa-calculator">
                     <field string="Performance History" name="performance_history_count" widget="statinfo"/>
-                </button>
-                <button class="oe_stat_button" type="object" name="view_project"
-                    attrs="{'invisible': [('customer', '=', False)]}"
-                    icon="fa-puzzle-piece">
-                    <field string="Mentorship" name="project_count" widget="statinfo"/>
                 </button>
                 <button class="oe_stat_button" type="object" name="view_sms_message"
                     attrs="{'invisible': [('customer', '=', False)]}"
