@@ -8,7 +8,7 @@ var core = require('web.core');
 var QWeb = core.qweb;
 var _t = core._t;
 
-models.load_fields('product.category','category_pv');
+models.load_fields('product.product','pv');
 
 
 screens.OrderWidget.include({
@@ -23,7 +23,7 @@ screens.OrderWidget.include({
         var category_pv_total = 0;
 
         _.each(order.get_orderlines(), function(orderline) {
-        	category_pv_total += orderline.product.categ.category_pv * orderline.quantity;
+            category_pv_total += orderline.product.pv * orderline.quantity;
         });
 
         this.el.querySelector('.summary .total > .value').textContent = this.format_currency(total);

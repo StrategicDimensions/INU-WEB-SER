@@ -357,6 +357,16 @@
         <field name="sequence" eval="0"/>
     </record>
 
+    <record id="contacts.action_contacts_view_kanban" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+    </record>
+    <record id="contacts.action_contacts_view_tree" model="ir.actions.act_window.view">
+        <field name="sequence" eval="0"/>
+    </record>
+    <record id="contacts.action_contacts_view_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+    </record>
+
     <record id="view_res_partner_downline_tree" model="ir.ui.view">
         <field name="name">res.partner.downline.tree</field>
         <field name="model">res.partner</field>

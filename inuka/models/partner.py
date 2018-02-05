@@ -201,7 +201,7 @@ class ResPartner(models.Model):
     is_device_live = fields.Boolean("Is Device Live", readonly=True)
 
     _sql_constraints = [
-        ('mobile_uniq', 'unique(mobile)', 'Mobile should be unique.'),
+#         ('mobile_uniq', 'unique(mobile)', 'Mobile should be unique.'),
         ('email_uniq', 'unique(email)', 'Email should be unique.'),
         ('ref_uniq', 'unique(ref)', 'Internal Reference should be unique.'),
     ]
@@ -514,6 +514,8 @@ class ResPartner(models.Model):
                 mobile = partner.mobile.replace(' ', '')
                 if len(mobile) < 11:
                     raise ValidationError(_('Mobile Number should not be less than 11 digits.'))
+                if self.search_count([('mobile', '=', partner.mobile)]):
+                    raise ValidationError(_('Mobile should be unique.'))
 
     @api.onchange('first_name', 'last_name')
     def _onchange_first_name(self):

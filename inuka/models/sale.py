@@ -309,25 +309,25 @@ class SaleUpload(models.Model):
         record_count = status_count = 0
         for data in row_list:
             if data.get('MEMBERID'):
-                part = Partner.search([('ref', '=', data['MEMBERID'])], limit=1)
-                if part:
-                    try:
-                        sql_query ="""UPDATE res_partner SET personal_pv = %s,
-                                    pv_downline_1 = %s, pv_downline_2 = %s,
-                                    pv_downline_3 = %s, pv_downline_4 = %s,
-                                    pv_tot_group = %s, personal_members = %s, new_members = %s WHERE ref = %s"""
-                        params = (data.get('PVPERS') or 0.0, data.get('PVDOWNLINE1') or 0.0, data.get('PVDOWNLINE2') or 0.0, data.get('PVDOWNLINE3') or 0.0, data.get('PVDOWNLINE4') or 0.0,
-                                data.get('PVTOTGROUP') or 0.0, data.get('ACTIVEPERSMEM') or 0, data.get('PERSNEWMEM') or 0, data.get('MEMBERID'))
-                        self.env.cr.execute(sql_query, params)
-                        record_count += 1
+#                 part = Partner.search([('ref', '=', data['MEMBERID'])], limit=1)
+#                 if part:
+                try:
+                    sql_query ="""UPDATE res_partner SET personal_pv = %s,
+                                pv_downline_1 = %s, pv_downline_2 = %s,
+                                pv_downline_3 = %s, pv_downline_4 = %s,
+                                pv_tot_group = %s, personal_members = %s, new_members = %s WHERE ref = %s"""
+                    params = (data.get('PVPERS') or 0.0, data.get('PVDOWNLINE1') or 0.0, data.get('PVDOWNLINE2') or 0.0, data.get('PVDOWNLINE3') or 0.0, data.get('PVDOWNLINE4') or 0.0,
+                            data.get('PVTOTGROUP') or 0.0, data.get('ACTIVEPERSMEM') or 0, data.get('PERSNEWMEM') or 0, data.get('MEMBERID'))
+                    self.env.cr.execute(sql_query, params)
+                    record_count += 1
 
-                        if part.status != status_dict.get(data.get('STATUS')):
-                            part.write({'status': status_dict.get(data.get('STATUS'))})
-                            status_count += 1
-                    except Exception as e:
-                        result = """Error: %s""" %(str(e))
-                        self.write({'result': result, 'end_time': fields.Datetime.now(self), 'state': 'error'})
-                        return True
+#                     if part.status != status_dict.get(data.get('STATUS')):
+#                         part.write({'status': status_dict.get(data.get('STATUS'))})
+#                         status_count += 1
+                except Exception as e:
+                    result = """Error: %s""" %(str(e))
+                    self.write({'result': result, 'end_time': fields.Datetime.now(self), 'state': 'error'})
+                    return True
         result = """%s records updated, %s status change updated""" %(record_count, status_count)
         self.write({'result': result, 'end_time': fields.Datetime.now(self), 'state': 'completed'})
         return True
