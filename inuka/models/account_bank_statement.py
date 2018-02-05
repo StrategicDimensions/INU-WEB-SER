@@ -494,31 +494,31 @@ class MasterAccountBankStatement(models.Model):
                     if not line.statement_id.journal_id.default_credit_account_id:
                         raise UserError(_("Please select Default Credit Account in Journal"))
 
-                    move = AccountMove.create({
-                        'date': line.date,
-                        'ref': line.ref,
-                        'journal_id': line.statement_id.journal_id.id,
-                        'line_ids': [(0, 0,
-                            {
-                                'account_id': line.statement_id.journal_id.default_statement_account_id.id,
-                                'partner_id': line.partner_id.id,
-                                'name': line.name,
-                                'debit': line.amount,
-                                'credit': 0.0,
-                                'date_maturity': line.date,
-                            }),
-                            (0, 0, {
-                                'account_id': line.statement_id.journal_id.default_credit_account_id.id,
-                                'partner_id': line.partner_id.id,
-                                'name': line.name,
-                                'debit': 0.0,
-                                'credit': line.amount,
-                                'date_maturity': line.date,
-                            }
-                        )]
-                    })
-                    move.post()
-                    line.move_id = move
+                move = AccountMove.create({
+                    'date': line.date,
+                    'ref': line.ref,
+                    'journal_id': line.statement_id.journal_id.id,
+                    'line_ids': [(0, 0,
+                        {
+                            'account_id': line.statement_id.journal_id.default_statement_account_id.id,
+                            'partner_id': line.partner_id.id,
+                            'name': line.name,
+                            'debit': line.amount,
+                            'credit': 0.0,
+                            'date_maturity': line.date,
+                        }),
+                        (0, 0, {
+                            'account_id': line.statement_id.journal_id.default_credit_account_id.id,
+                            'partner_id': line.partner_id.id,
+                            'name': line.name,
+                            'debit': 0.0,
+                            'credit': line.amount,
+                            'date_maturity': line.date,
+                        }
+                    )]
+                })
+                move.post()
+                line.move_id = move
 
 
 class MasterAccountBankStatementLine(models.Model):
