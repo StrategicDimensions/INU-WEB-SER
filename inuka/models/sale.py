@@ -198,12 +198,12 @@ class SaleOrderLine(models.Model):
     @api.onchange('product_id')
     def product_id_change(self):
         super(SaleOrderLine, self).product_id_change()
-        self.pv = self.product_id.categ_id.category_pv * self.product_uom_qty
-        self.unit_pv = self.product_id.categ_id.category_pv
+        self.pv = self.product_id.pv * self.product_uom_qty
+        self.unit_pv = self.product_id.pv
 
     @api.onchange('product_uom_qty')
     def _onchange_product_uom_qty(self):
-        self.pv = self.product_id.categ_id.category_pv * self.product_uom_qty
+        self.pv = self.product_id.pv * self.product_uom_qty
 
 
 class SaleAdvancePaymentInv(models.TransientModel):

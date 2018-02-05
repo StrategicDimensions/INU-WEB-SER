@@ -85,14 +85,14 @@ class AccountInvoiceLine(models.Model):
     @api.onchange('product_id')
     def _onchange_product_id(self):
         super(AccountInvoiceLine, self)._onchange_product_id()
-        self.pv = self.product_id.categ_id.category_pv * self.quantity
-        self.unit_pv = self.product_id.categ_id.category_pv
+        self.pv = self.product_id.pv * self.quantity
+        self.unit_pv = self.product_id.pv
 
     @api.onchange('quantity')
     def _onchange_quantity(self):
-        self.pv = self.product_id.categ_id.category_pv * self.quantity
+        self.pv = self.product_id.pv * self.quantity
 
     def _set_additional_fields(self, invoice):
-        self.pv = self.product_id.categ_id.category_pv * self.quantity
-        self.unit_pv = self.product_id.categ_id.category_pv
+        self.pv = self.product_id.pv * self.quantity
+        self.unit_pv = self.product_id.pv
         super(AccountInvoiceLine, self)._set_additional_fields(invoice)

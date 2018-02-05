@@ -329,7 +329,7 @@
                 <field name="home_phone" widget="phone" attrs="{'invisible': [('customer', '=', False)]}"/>
             </field>
             <field name="lang" position="after">
-                <field name="upline" domain="[('customer', '=', True)]" attrs="{'invisible': [('customer', '=', False)], 'required': [('customer', '=', True)]}"/>
+                <field name="upline" domain="[('customer', '=', True), ('id', '!=', id)]" attrs="{'invisible': [('customer', '=', False)], 'required': [('customer', '=', True)]}"/>
                 <field name="upline_id" attrs="{'invisible': [('customer', '=', False)], 'required': [('customer', '=', True)]}"/>
                 <field name="kit" attrs="{'invisible': ['|', ('customer', '=', False), ('status', 'not in', ('candidate'))], 'required': [('customer', '=', True)]}"/>
             </field>
@@ -340,6 +340,21 @@
                 <field name="ref" attrs="{'readonly': [('is_admin', '=', False), ('customer', '=', True)]}"/>
             </field>
         </field>
+    </record>
+
+    <!-- Hide the Send SMS and SMS icon on partner form -->
+    <delete model="ir.ui.view" search="[('name','=','res.partner.form.send.sms')]"/>
+    <delete model="ir.actions.act_window" search="[('name', '=', 'Send SMS'), ('src_model', '=', 'res.partner')]"/>
+
+    <!-- Default view for res.partner should be the list view -->
+    <record id="base.action_partner_form_view1" model="ir.actions.act_window.view">
+        <field eval="2" name="sequence"/>
+    </record>
+    <record id="base.action_partner_form_view2" model="ir.actions.act_window.view">
+        <field eval="1" name="sequence"/>
+    </record>
+    <record id="base.action_partner_tree_view1" model="ir.actions.act_window.view">
+        <field name="sequence" eval="0"/>
     </record>
 
     <record id="view_res_partner_downline_tree" model="ir.ui.view">

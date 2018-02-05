@@ -8,3 +8,9 @@ class ProductCategory(models.Model):
     _inherit = 'product.category'
 
     category_pv = fields.Float('Category PV')
+
+
+class ProductTemplate(models.Model):
+    _inherit = 'product.template'
+
+    pv = fields.Float('PV')
