@@ -514,7 +514,7 @@ class ResPartner(models.Model):
                 mobile = partner.mobile.replace(' ', '')
                 if len(mobile) < 11:
                     raise ValidationError(_('Mobile Number should not be less than 11 digits.'))
-                if self.search_count([('mobile', '=', partner.mobile)]):
+                if len(self.search_count([('mobile', '=', partner.mobile)])) > 1:
                     raise ValidationError(_('Mobile should be unique.'))
 
     @api.onchange('first_name', 'last_name')

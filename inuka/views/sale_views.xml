@@ -278,6 +278,7 @@
                     <group>
                         <field name="end_time" readonly="1"/>
                         <field name="create_date" string="Date" readonly="1"/>
+                        <field name="first_upload"/>
                     </group>
                 </group>
                 <group>
@@ -321,5 +322,48 @@
     </record>
 
     <menuitem id="menu_sale_upload" name="Sales Upload" action="action_sale_upload_form" parent="crm.crm_menu_config" sequence="10" groups="base.group_system"/>
+
+    <record id="view_sale_upload_intermediate_form" model="ir.ui.view">
+        <field name="name">sale.upload.intermediate.form</field>
+        <field name="model">sale.upload.intermediate</field>
+        <field name="arch" type="xml">
+            <form string="Sale Upload Intermediate">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="partner_id" domain="[('customer', '=', True)]"/>
+                            <field name="old_status"/>
+                        </group>
+                        <group>
+                            <field name="active"/>
+                            <field name="new_status"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_sale_upload_intermediate_tree" model="ir.ui.view">
+        <field name="name">sale.upload.intermediate.tree</field>
+        <field name="model">sale.upload.intermediate</field>
+        <field name="arch" type="xml">
+            <tree string="Sale Upload Intermediate">
+                <field name="partner_id"/>
+                <field name="old_status"/>
+                <field name="new_status"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_sale_upload_intermediate_form" model="ir.actions.act_window">
+        <field name="name">Sales Upload Intermediate</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sale.upload.intermediate</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_sale_upload_intermediate" name="Sales Upload Intermediate" action="action_sale_upload_intermediate_form" parent="crm.crm_menu_config" sequence="10" groups="base.group_system"/>
 
 </odoo>

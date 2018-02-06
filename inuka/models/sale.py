@@ -239,11 +239,12 @@ class SaleUpload(models.Model):
         ('error', 'Error'),
         ('cancelled', 'Cancelled'),
         ], string='Status', default='new')
-    start_time = fields.Datetime("Start Time", default=lambda self: fields.Datetime.now())
+    start_time = fields.Datetime("Start Time")
     end_time = fields.Datetime("End Time")
     duration = fields.Integer(compute="_compute_duration", string="Duration")
     result = fields.Text()
     file = fields.Binary()
+    first_upload = fields.Boolean("First Upload")
 
     def _compute_duration(self):
         for record in self:
@@ -272,6 +273,7 @@ class SaleUpload(models.Model):
     def import_data(self):
         self.ensure_one()
         Partner = self.env['res.partner']
+        Intermediate = self.env['sale.upload.intermediate']
         row_list = []
 
         try:
@@ -300,8 +302,8 @@ class SaleUpload(models.Model):
             'Emerald': 'emerald',
             'Sapphire': 'sapphire',
             'Diamond': 'diamond',
-            'Double Diamond': 'double_diamond',
-            'Triple Diamond': 'triple_diamond',
+            'double_diamond': 'double_diamond',
+            'triple_diamond': 'triple_diamond',
             'Exective Diamond': 'exective_diamond',
             'Presidential': 'presidential',
         }
@@ -309,25 +311,92 @@ class SaleUpload(models.Model):
         record_count = status_count = 0
         for data in row_list:
             if data.get('MEMBERID'):
-#                 part = Partner.search([('ref', '=', data['MEMBERID'])], limit=1)
-#                 if part:
-                try:
-                    sql_query ="""UPDATE res_partner SET personal_pv = %s,
-                                pv_downline_1 = %s, pv_downline_2 = %s,
-                                pv_downline_3 = %s, pv_downline_4 = %s,
-                                pv_tot_group = %s, personal_members = %s, new_members = %s WHERE ref = %s"""
-                    params = (data.get('PVPERS') or 0.0, data.get('PVDOWNLINE1') or 0.0, data.get('PVDOWNLINE2') or 0.0, data.get('PVDOWNLINE3') or 0.0, data.get('PVDOWNLINE4') or 0.0,
-                            data.get('PVTOTGROUP') or 0.0, data.get('ACTIVEPERSMEM') or 0, data.get('PERSNEWMEM') or 0, data.get('MEMBERID'))
-                    self.env.cr.execute(sql_query, params)
-                    record_count += 1
+                if self.first_upload:
+                    try:
+                        sql_query ="""UPDATE res_partner SET personal_pv = %s,
+                                    pv_downline_1 = %s, pv_downline_2 = %s,
+                                    pv_downline_3 = %s, pv_downline_4 = %s,
+                                    pv_tot_group = %s, personal_members = %s, new_members = %s, status = %s WHERE ref = %s"""
+                        params = (data.get('PVPERS') or 0.0, data.get('PVDOWNLINE1') or 0.0, data.get('PVDOWNLINE2') or 0.0, data.get('PVDOWNLINE3') or 0.0, data.get('PVDOWNLINE4') or 0.0,
+                                data.get('PVTOTGROUP') or 0.0, data.get('ACTIVEPERSMEM') or 0, data.get('PERSNEWMEM') or 0, status_dict.get(data.get('STATUS')), data.get('MEMBERID'))
+                        self.env.cr.execute(sql_query, params)
+                        record_count += 1
 
-#                     if part.status != status_dict.get(data.get('STATUS')):
-#                         part.write({'status': status_dict.get(data.get('STATUS'))})
-#                         status_count += 1
-                except Exception as e:
-                    result = """Error: %s""" %(str(e))
-                    self.write({'result': result, 'end_time': fields.Datetime.now(self), 'state': 'error'})
-                    return True
+                    except Exception as e:
+                        result = """Error: %s""" %(str(e))
+                        self.write({'result': result, 'end_time': fields.Datetime.now(self), 'state': 'error'})
+                        return True
+                else:
+                    part = Partner.search([('ref', '=', data['MEMBERID'])], limit=1)
+                    if part:
+                        try:
+                            sql_query ="""UPDATE res_partner SET personal_pv = %s,
+                                        pv_downline_1 = %s, pv_downline_2 = %s,
+                                        pv_downline_3 = %s, pv_downline_4 = %s,
+                                        pv_tot_group = %s, personal_members = %s, new_members = %s WHERE ref = %s"""
+                            params = (data.get('PVPERS') or 0.0, data.get('PVDOWNLINE1') or 0.0, data.get('PVDOWNLINE2') or 0.0, data.get('PVDOWNLINE3') or 0.0, data.get('PVDOWNLINE4') or 0.0,
+                                    data.get('PVTOTGROUP') or 0.0, data.get('ACTIVEPERSMEM') or 0, data.get('PERSNEWMEM') or 0, data.get('MEMBERID'))
+                            self.env.cr.execute(sql_query, params)
+                            record_count += 1
+
+                            if part.status != status_dict.get(data.get('STATUS')):
+                                sql_query = """INSERT INTO sale_upload_intermediate (partner_id, old_status, new_status, active)
+                                        VALUES (%s, %s, %s)"""
+                                params = (part.id, part.status, status_dict.get(data.get('STATUS')), True)
+                                self.env.cr.execute(sql_query, params)
+                                self.env.cr.commit()
+                                status_count += 1
+                        except Exception as e:
+                            result = """Error: %s""" %(str(e))
+                            self.write({'result': result, 'end_time': fields.Datetime.now(self), 'state': 'error'})
+                            return True
+
         result = """%s records updated, %s status change updated""" %(record_count, status_count)
         self.write({'result': result, 'end_time': fields.Datetime.now(self), 'state': 'completed'})
         return True
+
+
+class SaleUploadIntermediate(models.Model):
+    _name = "sale.upload.intermediate"
+    _description = "Sale Upload Intermediate"
+    _rec_name = 'partner_id'
+
+    partner_id = fields.Many2one("res.partner", string="Customer")
+    old_status = fields.Selection([
+        ('candidate', 'Candidate'),
+        ('new', 'New'),
+        ('junior', 'Junior'),
+        ('senior', 'Senior'),
+        ('pearl', 'Pearl'),
+        ('ruby', 'Ruby'),
+        ('emerald', 'Emerald'),
+        ('sapphire', 'Sapphire'),
+        ('diamond', 'Diamond'),
+        ('double_diamond', 'Double Diamond'),
+        ('triple_diamond', 'Triple Diamond'),
+        ('exective_diamond', 'Exective Diamond'),
+        ('presidential', 'Presidential')
+        ], string='Old Status')
+    new_status = fields.Selection([
+        ('candidate', 'Candidate'),
+        ('new', 'New'),
+        ('junior', 'Junior'),
+        ('senior', 'Senior'),
+        ('pearl', 'Pearl'),
+        ('ruby', 'Ruby'),
+        ('emerald', 'Emerald'),
+        ('sapphire', 'Sapphire'),
+        ('diamond', 'Diamond'),
+        ('double_diamond', 'Double Diamond'),
+        ('triple_diamond', 'Triple Diamond'),
+        ('exective_diamond', 'Exective Diamond'),
+        ('presidential', 'Presidential')
+        ], string='New Status')
+    active = fields.Boolean(default=True)
+
+    @api.model
+    def update_status(self):
+        records = self.search([], limit=20)
+        for record in records:
+            record.partner_id.write({'status': record.new_status})
+            record.write({'active': False})

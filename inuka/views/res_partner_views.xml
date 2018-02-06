@@ -329,7 +329,7 @@
                 <field name="home_phone" widget="phone" attrs="{'invisible': [('customer', '=', False)]}"/>
             </field>
             <field name="lang" position="after">
-                <field name="upline" domain="[('customer', '=', True), ('id', '!=', id)]" attrs="{'invisible': [('customer', '=', False)], 'required': [('customer', '=', True)]}"/>
+                <field name="upline" domain="[('customer', '=', True), ('id', '!=', id), ('type', '=', 'contact')]" attrs="{'invisible': [('customer', '=', False)], 'required': [('customer', '=', True)]}"/>
                 <field name="upline_id" attrs="{'invisible': [('customer', '=', False)], 'required': [('customer', '=', True)]}"/>
                 <field name="kit" attrs="{'invisible': ['|', ('customer', '=', False), ('status', 'not in', ('candidate'))], 'required': [('customer', '=', True)]}"/>
             </field>

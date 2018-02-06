@@ -12,3 +12,4 @@ access_inuka_reward_manager,inuka.reward.manager,model_inuka_reward,account.grou
 access_reward_category,access_reward_category,model_reward_category,,1,0,0,0
 access_achievement_level,access_achievement_level,model_achievement_level,,1,0,0,0
 access_sale_upload,access_sale_upload,model_sale_upload,,1,1,1,0
+access_sale_upload_intermediate,access_sale_upload_intermediate,model_sale_upload_intermediate,,1,1,1,0

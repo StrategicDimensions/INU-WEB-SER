@@ -49,11 +49,14 @@ class HelpdeskTicket(models.Model):
 
     @api.multi
     def import_bank_statement(self):
-        journal_id = self.env['account.journal'].search([('name', '=', 'FNB')], limit=1).id
+        ResPartnerBank = self.env['res.partner.bank']
         stage = self.env['helpdesk.stage'].search([('name', '=', 'Solved')], limit=1)
         for ticket in self:
             attachments = self.env['ir.attachment'].search([('res_id', '=', ticket.id), ('res_model', '=', 'helpdesk.ticket')])
 
+            acc_number = ticket.name.split("[")[1][:-1]
+            bank_account_id = ResPartnerBank.search([('acc_number', '=', acc_number)], limit=1).id
+            journal_id = self.env['account.journal'].search([('bank_account_id', '=', bank_account_id)], limit=1).id
             for attachment in attachments:
                 fp = BytesIO()
                 fp.write(base64.b64decode(attachment.datas))
@@ -76,11 +79,14 @@ class HelpdeskTicket(models.Model):
 
     @api.multi
     def import_master_bank_statement(self):
-        journal_id = self.env['account.journal'].search([('name', '=', 'FNB')], limit=1).id
+        ResPartnerBank = self.env['res.partner.bank']
         stage = self.env['helpdesk.stage'].search([('name', '=', 'Solved')], limit=1)
         for ticket in self:
             attachments = self.env['ir.attachment'].search([('res_id', '=', ticket.id), ('res_model', '=', 'helpdesk.ticket')])
 
+            acc_number = ticket.name.split("[")[1][:-1]
+            bank_account_id = ResPartnerBank.search([('acc_number', '=', acc_number)], limit=1).id
+            journal_id = self.env['account.journal'].search([('bank_account_id', '=', bank_account_id)], limit=1).id
             for attachment in attachments:
                 fp = BytesIO()
                 fp.write(base64.b64decode(attachment.datas))
