@@ -341,7 +341,7 @@ class SaleUpload(models.Model):
 
                             if part.status != status_dict.get(data.get('STATUS')):
                                 sql_query = """INSERT INTO sale_upload_intermediate (partner_id, old_status, new_status, active)
-                                        VALUES (%s, %s, %s)"""
+                                        VALUES (%s, %s, %s, %s)"""
                                 params = (part.id, part.status, status_dict.get(data.get('STATUS')), True)
                                 self.env.cr.execute(sql_query, params)
                                 self.env.cr.commit()
