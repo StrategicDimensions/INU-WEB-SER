@@ -266,7 +266,7 @@
                         </group>
                         <group>
                             <field name="device_type"/>
-                            <field name="portal_password" readonly="1"/>
+                            <!--field name="portal_password" readonly="1"/-->
                         </group>
                     </group>
                 </page>

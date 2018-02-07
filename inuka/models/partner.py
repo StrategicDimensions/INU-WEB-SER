@@ -199,7 +199,7 @@ class ResPartner(models.Model):
         ('iphone', 'iPhone'),
     ], string="Device Type", readonly=True)
     is_device_live = fields.Boolean("Is Device Live", readonly=True)
-    portal_password = fields.Char("Portal Password")
+#     portal_password = fields.Char("Portal Password")
 
     _sql_constraints = [
 #         ('mobile_uniq', 'unique(mobile)', 'Mobile should be unique.'),
