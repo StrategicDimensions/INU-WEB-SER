@@ -557,4 +557,15 @@
 
     <menuitem id="menu_performance_history" name="Performance History" action="action_performance_history_form" parent="crm.crm_menu_root" sequence="3"/>
 
+    <record id="view_res_company_form_inherit_inuka" model="ir.ui.view">
+        <field name="name">res.company.form.inherit.inuka</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <field name="vat" position="attributes">
+                <attribute name="string">VAT</attribute>
+            </field>
+        </field>
+    </record>
+
 </odoo>

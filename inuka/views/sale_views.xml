@@ -366,4 +366,28 @@
 
     <menuitem id="menu_sale_upload_intermediate" name="Sales Upload Intermediate" action="action_sale_upload_intermediate_form" parent="crm.crm_menu_config" sequence="10" groups="base.group_system"/>
 
+    <menuitem id="crm.crm_team_config"
+        name="Sales Team"
+        parent="crm.crm_menu_config"
+        action="sales_team.sales_team_config_action"
+        sequence="5"/>
+
+    <menuitem id="crm.sales_team_menu_report_crm"
+        name="Sales Team"
+        parent="crm.crm_menu_report"
+        action="sales_team.crm_team_salesteams_act"
+        sequence="10"/>
+
+    <menuitem id="sale.sales_team_config"
+        name="Sales Team"
+        parent="sale.menu_sale_config"
+        action="sales_team.sales_team_config_action"
+        sequence="2"/>
+
+    <menuitem id="sale.report_sales_team"
+        name="Sales Team"
+        parent="sale.menu_sale_report"
+        action="sales_team.crm_team_salesteams_act"
+        sequence="2"/>
+
 </odoo>

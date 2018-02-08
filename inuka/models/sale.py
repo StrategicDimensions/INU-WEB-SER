@@ -396,7 +396,7 @@ class SaleUploadIntermediate(models.Model):
 
     @api.model
     def update_status(self):
-        records = self.search([], limit=20)
+        records = self.search([], limit=500)
         for record in records:
             record.partner_id.write({'status': record.new_status})
             record.write({'active': False})
