@@ -244,7 +244,8 @@ class SaleUpload(models.Model):
     duration = fields.Integer(compute="_compute_duration", string="Duration")
     result = fields.Text()
     file = fields.Binary()
-    first_upload = fields.Boolean("First Upload")
+    end_point = fields.Integer("End Point")
+    batch_size = fields.Integer("Batch Size")
 
     def _compute_duration(self):
         for record in self:
@@ -287,7 +288,17 @@ class SaleUpload(models.Model):
         except Exception as e:
             raise UserError(_("Invalid file. \n Note: file must be csv" % tools.ustr(e)))
 
-        for row in range(1, len(reader_info)):
+        if self.end_point == 0:
+            start_point = 0
+            end_point = start_point + batch_size
+        else:
+            start_point = self.end_point
+            end_point = start_point + batch_size
+
+        if end_point >= len(reader_info):
+            end_point = len(reader_info)
+
+        for row in range(start_point, end_point):
             field = reader_info[row]
             values = dict(zip(keys, field))
             row_list.append(values)
@@ -311,48 +322,38 @@ class SaleUpload(models.Model):
         record_count = status_count = 0
         for data in row_list:
             if data.get('MEMBERID'):
-                if self.first_upload:
+                part = Partner.search([('ref', '=', data['MEMBERID'])], limit=1)
+                if part:
                     try:
                         sql_query ="""UPDATE res_partner SET personal_pv = %s,
                                     pv_downline_1 = %s, pv_downline_2 = %s,
                                     pv_downline_3 = %s, pv_downline_4 = %s,
-                                    pv_tot_group = %s, personal_members = %s, new_members = %s, status = %s WHERE ref = %s"""
+                                    pv_tot_group = %s, personal_members = %s, new_members = %s WHERE ref = %s"""
                         params = (data.get('PVPERS') or 0.0, data.get('PVDOWNLINE1') or 0.0, data.get('PVDOWNLINE2') or 0.0, data.get('PVDOWNLINE3') or 0.0, data.get('PVDOWNLINE4') or 0.0,
-                                data.get('PVTOTGROUP') or 0.0, data.get('ACTIVEPERSMEM') or 0, data.get('PERSNEWMEM') or 0, status_dict.get(data.get('STATUS')), data.get('MEMBERID'))
+                                data.get('PVTOTGROUP') or 0.0, data.get('ACTIVEPERSMEM') or 0, data.get('PERSNEWMEM') or 0, data.get('MEMBERID'))
                         self.env.cr.execute(sql_query, params)
                         record_count += 1
-
+    
+                        if part.status != status_dict.get(data.get('STATUS')):
+                            sql_query = """INSERT INTO sale_upload_intermediate (partner_id, old_status, new_status, active)
+                                    VALUES (%s, %s, %s, %s)"""
+                            params = (part.id, part.status, status_dict.get(data.get('STATUS')), True)
+                            self.env.cr.execute(sql_query, params)
+                            self.env.cr.commit()
+                            status_count += 1
                     except Exception as e:
                         result = """Error: %s""" %(str(e))
                         self.write({'result': result, 'end_time': fields.Datetime.now(self), 'state': 'error'})
                         return True
-                else:
-                    part = Partner.search([('ref', '=', data['MEMBERID'])], limit=1)
-                    if part:
-                        try:
-                            sql_query ="""UPDATE res_partner SET personal_pv = %s,
-                                        pv_downline_1 = %s, pv_downline_2 = %s,
-                                        pv_downline_3 = %s, pv_downline_4 = %s,
-                                        pv_tot_group = %s, personal_members = %s, new_members = %s WHERE ref = %s"""
-                            params = (data.get('PVPERS') or 0.0, data.get('PVDOWNLINE1') or 0.0, data.get('PVDOWNLINE2') or 0.0, data.get('PVDOWNLINE3') or 0.0, data.get('PVDOWNLINE4') or 0.0,
-                                    data.get('PVTOTGROUP') or 0.0, data.get('ACTIVEPERSMEM') or 0, data.get('PERSNEWMEM') or 0, data.get('MEMBERID'))
-                            self.env.cr.execute(sql_query, params)
-                            record_count += 1
 
-                            if part.status != status_dict.get(data.get('STATUS')):
-                                sql_query = """INSERT INTO sale_upload_intermediate (partner_id, old_status, new_status, active)
-                                        VALUES (%s, %s, %s, %s)"""
-                                params = (part.id, part.status, status_dict.get(data.get('STATUS')), True)
-                                self.env.cr.execute(sql_query, params)
-                                self.env.cr.commit()
-                                status_count += 1
-                        except Exception as e:
-                            result = """Error: %s""" %(str(e))
-                            self.write({'result': result, 'end_time': fields.Datetime.now(self), 'state': 'error'})
-                            return True
+        result = """%s - %s: %s records updated, %s status change updated""" %(start_point, end_point, record_count, status_count)
+        if self.result:
+            result = self.result + '\n' + result
+        if end_point == len(reader_info):
+            self.write({'result': result, 'end_time': fields.Datetime.now(self), 'state': 'completed'})
+        else:
+            self.write({'end_point':end_point,'result': result, 'end_time': fields.Datetime.now(self), 'state': 'inprogress'})
 
-        result = """%s records updated, %s status change updated""" %(record_count, status_count)
-        self.write({'result': result, 'end_time': fields.Datetime.now(self), 'state': 'completed'})
         return True
 
 
