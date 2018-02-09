@@ -13,7 +13,7 @@
                 </header>
             </xpath>
             <field name="category_id" position="after">
-                <field name="status" attrs="{'invisible':[('customer', '=', False)]}"/>
+                <field name="status" attrs="{'invisible':[('customer', '=', False)], 'required':[('customer', '=', True)]}"/>
             </field>
             <field name="trust" position="after">
                 <field name="credit_limit"/>
@@ -296,25 +296,25 @@
                 <attribute name="attrs">{'invisible': [('customer', '=', True)]}</attribute>
             </field>
             <field name="street" position="attributes">
-                <attribute name="required">1</attribute>
+                <attribute name="attrs">{'required': [('customer', '=', True)]}</attribute>
             </field>
             <field name="city" position="attributes">
-                <attribute name="required">1</attribute>
+                <attribute name="attrs">{'required': [('customer', '=', True)]}</attribute>
             </field>
             <field name="state_id" position="attributes">
-                <attribute name="required">1</attribute>
+                <attribute name="attrs">{'required': [('customer', '=', True)]}</attribute>
             </field>
             <field name="zip" position="attributes">
-                <attribute name="required">1</attribute>
+                <attribute name="attrs">{'required': [('customer', '=', True)]}</attribute>
             </field>
             <field name="country_id" position="attributes">
-                <attribute name="required">1</attribute>
+                <attribute name="attrs">{'required': [('customer', '=', True)]}</attribute>
             </field>
             <field name="user_id" position="attributes">
                 <attribute name="string">Mentor</attribute>
             </field>
             <field name="mobile" position="attributes">
-                <attribute name="required">1</attribute>
+                <attribute name="attrs">{'required': [('customer', '=', True)]}</attribute>
             </field>
             <field name="type" position="before">
                 <field name="first_name" attrs="{'invisible': [('customer', '=', False)], 'required': [('customer', '=', True)]}"/>

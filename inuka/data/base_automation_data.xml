@@ -316,42 +316,6 @@ records.create_helpdesk_ticket()
         </field>
     </record>
 
-    <record id="res_partner_compute_mtd" model="ir.cron">
-        <field name="name">Calculate MTD</field>
-        <field name="model_id" ref="model_res_partner"/>
-        <field name="state">code</field>
-        <field name="code">model.compute_mtd()</field>
-        <field name="interval_number">4</field>
-        <field name="interval_type">hours</field>
-        <field name="numbercall">-1</field>
-        <field name="doall" eval="False"/>
-        <field name="nextcall" eval="(DateTime.now() + timedelta(days=0)).strftime('%Y-%m-%d 09:00:00')" />
-    </record>
-
-    <record id="res_partner_compute_qtd" model="ir.cron">
-        <field name="name">Calculate QTD</field>
-        <field name="model_id" ref="model_res_partner"/>
-        <field name="state">code</field>
-        <field name="code">model.compute_qtd()</field>
-        <field name="interval_number">1</field>
-        <field name="interval_type">days</field>
-        <field name="numbercall">-1</field>
-        <field name="doall" eval="False"/>
-        <field name="nextcall" eval="(DateTime.now() + timedelta(days=0)).strftime('%Y-%m-%d 20:00:00')" />
-    </record>
-
-    <record id="res_partner_compute_ytd" model="ir.cron">
-        <field name="name">Calculate YTD</field>
-        <field name="model_id" ref="model_res_partner"/>
-        <field name="state">code</field>
-        <field name="code">model.compute_ytd()</field>
-        <field name="interval_number">1</field>
-        <field name="interval_type">days</field>
-        <field name="numbercall">-1</field>
-        <field name="doall" eval="False"/>
-        <field name="nextcall" eval="(DateTime.now() + timedelta(days=0)).strftime('%Y-%m-%d 21:00:00')" />
-    </record>
-
     <record id="sale_upload_intermediate_update_status" model="ir.cron">
         <field name="name">Sale Upload Intermediate: Status Update</field>
         <field name="model_id" ref="model_sale_upload_intermediate"/>
