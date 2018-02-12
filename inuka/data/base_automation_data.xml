@@ -327,4 +327,15 @@ records.create_helpdesk_ticket()
         <field name="doall" eval="False"/>
     </record>
 
+    <record id="sale_upload_import_data" model="ir.cron">
+        <field name="name">Sale Upload: Import Data</field>
+        <field name="model_id" ref="model_sale_upload"/>
+        <field name="state">code</field>
+        <field name="code">model.run()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field name="doall" eval="False"/>
+    </record>
+
 </odoo>

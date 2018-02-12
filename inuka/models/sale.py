@@ -256,6 +256,11 @@ class SaleUpload(models.Model):
                 duration = (end_time - start_time).total_seconds()
             record.duration = duration
 
+    @api.model
+    def run(self):
+        record = self.search([('state', 'in', ('new', 'inprogress'))], limit=1)
+        record.button_start()
+
     @api.multi
     def button_start(self):
         self.ensure_one()
