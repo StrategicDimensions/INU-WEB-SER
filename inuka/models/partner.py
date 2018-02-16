@@ -6,11 +6,15 @@ import re
 from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 from random import randint
+import logging
 
 from odoo import api, fields, models, _
 from odoo.tools import DEFAULT_SERVER_DATE_FORMAT as DF
 from odoo.exceptions import ValidationError
 from odoo.tools import email_split
+from odoo.addons.auth_signup.models.res_partner import SignupError, now
+
+_logger = logging.getLogger(__name__)
 
 
 class Users(models.Model):
@@ -31,6 +35,51 @@ class Users(models.Model):
         if len(users) != 1:
             raise Exception(_('Reset password: invalid username or email'))
         return users.action_reset_password()
+
+
+    @api.multi
+    def action_reset_password(self):
+        """ create signup token for each user, and send their signup url by email """
+        # prepare reset password signup
+        create_mode = bool(self.env.context.get('create_user'))
+
+        # no time limit for initial invitation, only for reset password
+        expiration = False if create_mode else now(days=+1)
+
+        self.mapped('partner_id').signup_prepare(signup_type="reset", expiration=expiration)
+
+        # send email to users with their signup url
+        template = False
+        if create_mode:
+            try:
+                template = self.env.ref('auth_signup.set_password_email', raise_if_not_found=False)
+            except ValueError:
+                pass
+        if not template:
+            template = self.env.ref('auth_signup.reset_password_email')
+        assert template._name == 'mail.template'
+
+        for user in self:
+            if user.email and self.env.context.get('reset_via_mail'):
+                template.with_context(lang=user.lang).send_mail(user.id, force_send=True, raise_exception=True)
+                _logger.info("Password reset email sent for user <%s> to <%s>", user.login, user.email)
+            if user.partner_id.mobile and self.env.context.get('reset_via_sms'):
+                user.send_reset_sms()
+
+    @api.multi
+    def send_reset_sms(self):
+        self.ensure_one()
+        sms_template = self.env.ref('sms_frame.sms_template_reset_password')
+        msg_compose = self.env['sms.compose'].create({
+            'record_id': self.id,
+            'model': 'res.users',
+            'sms_template_id': sms_template.id,
+            'from_mobile_id': sms_template.from_mobile_verified_id.id,
+            'to_number': self.partner_id.mobile,
+            'sms_content': """Dear %s, A password reset was requested for your Inuka Portal/Mobile App. Change your password by following this link which is valid for 24 hrs:
+%s""" %(self.name, self.partner_id.signup_url)
+        })
+        msg_compose.send_entity()
 
 
 class ResPartner(models.Model):
@@ -587,7 +636,8 @@ class ResPartner(models.Model):
             'product_id': product.id,
             'product_uom_qty': 1.0,
             'order_id': order.id,
-            'pv': product.categ_id.category_pv,
+            'pv': product.pv,
+            'unit_pv': product.pv,
         }
 
     @api.model
@@ -918,6 +968,52 @@ def extract_email(email):
 
 class PortalWizardUser(models.TransientModel):
     _inherit = 'portal.wizard.user'
+
+    @api.multi
+    def action_apply(self):
+        self.env['res.partner'].check_access_rights('write')
+        """ From selected partners, add corresponding users to chosen portal group. It either granted
+            existing user, or create new one (and add it to the group).
+        """
+
+        for wizard_user in self.sudo().with_context(active_test=False):
+            if not wizard_user.partner_id.email:
+                return True
+            group_portal = wizard_user.wizard_id.portal_id
+            if not group_portal.is_portal:
+                raise UserError(_('Group %s is not a portal') % group_portal.name)
+            user = wizard_user.partner_id.user_ids[0] if wizard_user.partner_id.user_ids else None
+            # update partner email, if a new one was introduced
+            if wizard_user.partner_id.email != wizard_user.email:
+                wizard_user.partner_id.write({'email': wizard_user.email})
+            # add portal group to relative user of selected partners
+            if wizard_user.in_portal:
+                user_portal = None
+                # create a user if necessary, and make sure it is in the portal group
+                if not user:
+                    if wizard_user.partner_id.company_id:
+                        company_id = wizard_user.partner_id.company_id.id
+                    else:
+                        company_id = self.env['res.company']._company_default_get('res.users')
+                    user_portal = wizard_user.sudo().with_context(company_id=company_id)._create_user()
+                else:
+                    user_portal = user
+                wizard_user.write({'user_id': user_portal.id})
+                if not wizard_user.user_id.active or group_portal not in wizard_user.user_id.groups_id:
+                    wizard_user.user_id.write({'active': True, 'groups_id': [(4, group_portal.id)]})
+                    # prepare for the signup process
+                    wizard_user.user_id.partner_id.signup_prepare()
+                    wizard_user.with_context(active_test=True)._send_email()
+                wizard_user.refresh()
+            else:
+                # remove the user (if it exists) from the portal group
+                if user and group_portal in user.groups_id:
+                    # if user belongs to portal only, deactivate it
+                    if len(user.groups_id) <= 1:
+                        user.write({'groups_id': [(3, group_portal.id)], 'active': False})
+                    else:
+                        user.write({'groups_id': [(3, group_portal.id)]})
+
 
     @api.multi
     def _create_user(self):

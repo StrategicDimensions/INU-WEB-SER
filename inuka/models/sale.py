@@ -18,6 +18,10 @@ class SaleOrder(models.Model):
     def _default_expiry_date(self):
         return date.today() + relativedelta(days=90)
 
+    @api.model
+    def _get_default_team(self):
+        return self.env['crm.team']._get_default_team_id()
+
     @api.depends('order_line','order_line.pv')
     def _compute_tot_pv(self):
         for order in self:
@@ -74,6 +78,7 @@ class SaleOrder(models.Model):
         ('portal', 'Online Portal'),
         ('mobile', 'Mobile Application'),
     ], string="Channel")
+    team_id = fields.Many2one('crm.team', 'Sales Team', change_default=True, default=_get_default_team, oldname='section_id')
 
     @api.depends('state', 'order_line', 'order_line.qty_delivered', 'order_line.product_uom_qty')
     def _compute_delivery_status(self):
@@ -85,7 +90,7 @@ class SaleOrder(models.Model):
 
             if all(float_compare(line.qty_delivered, 0.000, precision_digits=precision) == 0 for line in order.order_line if line.product_uom_qty):
                 order.delivery_status = 'to_deliver'
-            elif all(float_compare(line.qty_delivered, line.product_uom_qty, precision_digits=precision) == 0 for line in order.order_line):
+            elif all(float_compare(line.qty_delivered, line.product_uom_qty, precision_digits=precision) == 0 for line in order.order_line if line.product_id.type != 'service'):
                 order.delivery_status = 'fully'
             else:
                 order.delivery_status = 'partially'
@@ -205,6 +210,15 @@ class SaleOrderLine(models.Model):
     def _onchange_product_uom_qty(self):
         self.pv = self.product_id.pv * self.product_uom_qty
 
+    @api.onchange('discount')
+    def _set_pv_zero(self):
+        if self.discount > 0:
+            self.pv = 0
+            self.unit_pv = 0
+        else:
+            self.pv = self.product_id.pv * self.product_uom_qty
+            self.unit_pv = self.product_id.pv
+
 
 class SaleAdvancePaymentInv(models.TransientModel):
     _inherit = "sale.advance.payment.inv"
@@ -258,8 +272,9 @@ class SaleUpload(models.Model):
 
     @api.model
     def run(self):
-        record = self.search([('state', 'in', ('new', 'inprogress'))], limit=1)
-        record.button_start()
+        record = self.search([('state', 'in', ('new', 'inprogress'))], limit=1, order="create_date")
+        if record:
+            record.button_start()
 
     @api.multi
     def button_start(self):
@@ -295,10 +310,10 @@ class SaleUpload(models.Model):
 
         if self.end_point == 0:
             start_point = 0
-            end_point = start_point + batch_size
+            end_point = start_point + self.batch_size
         else:
             start_point = self.end_point
-            end_point = start_point + batch_size
+            end_point = start_point + self.batch_size
 
         if end_point >= len(reader_info):
             end_point = len(reader_info)
@@ -406,3 +421,16 @@ class SaleUploadIntermediate(models.Model):
         for record in records:
             record.partner_id.write({'status': record.new_status})
             record.write({'active': False})
+
+
+class Lead(models.Model):
+    _inherit = "crm.lead"
+
+    team_id = fields.Many2one('crm.team', string='Sales Team', oldname='section_id', default=lambda self: self.env['crm.team'].sudo()._get_default_team_id(user_id=self.env.uid),
+        index=True, track_visibility='onchange', help='When sending mails, the default email address is taken from the sales channel.')
+
+
+class SaleReport(models.Model):
+    _inherit = "sale.report"
+
+    team_id = fields.Many2one('crm.team', 'Sales Team', readonly=True, oldname='section_id')

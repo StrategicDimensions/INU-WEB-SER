@@ -13,3 +13,4 @@ from . import account_journal
 from . import helpdesk
 from . import bank_reconciliation_report
 from . import rewards
+from . import mail_thread

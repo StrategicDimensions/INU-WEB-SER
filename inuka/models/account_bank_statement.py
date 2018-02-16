@@ -503,16 +503,16 @@ class MasterAccountBankStatement(models.Model):
                             'account_id': line.statement_id.journal_id.default_statement_account_id.id,
                             'partner_id': line.partner_id.id,
                             'name': line.name,
-                            'debit': line.amount,
-                            'credit': 0.0,
+                            'debit': line.amount > 0 and line.amount or 0.0,
+                            'credit': line.amount < 0 and abs(line.amount) or 0.0,
                             'date_maturity': line.date,
                         }),
                         (0, 0, {
                             'account_id': line.statement_id.journal_id.default_credit_account_id.id,
                             'partner_id': line.partner_id.id,
                             'name': line.name,
-                            'debit': 0.0,
-                            'credit': line.amount,
+                            'debit': line.amount < 0 and abs(line.amount) or 0.0,
+                            'credit': line.amount > 0 and line.amount or 0.0,
                             'date_maturity': line.date,
                         }
                     )]

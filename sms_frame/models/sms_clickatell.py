@@ -13,7 +13,7 @@ class SmsGatewayClickatell(models.Model):
     def send_message(self, sms_gateway_id, from_number, to_number, sms_content, my_model_name='', my_record_id=0, media=None, queued_sms_message=None):
         sms_account = self.env['sms.account'].search([('id', '=', sms_gateway_id)], limit=1)
         clickatell1 = Http(sms_account.clicKatell_username, sms_account.clicKatell_password, sms_account.clicKatell_api)
-        response = clickatell1.sendMessage(to_number, sms_content.decode('utf-8'))
+        response = clickatell1.sendMessage(to_number, sms_content.decode('utf-8'), {'from': '41798073057'})
         return response
 
     def check_messages(self, account_id, message_id=""):

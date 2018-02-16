@@ -74,6 +74,8 @@ class HelpdeskTicket(models.Model):
                                     new_rec = self.env['account.bank.statement.import'].with_context(journal_id=journal_id).create({'data_file': base64.b64encode(extract_file.read()), 'filename': 'test'})
                                     new_rec.import_file()
                                     ticket.write({'stage_id': stage.id})
+                            except Exception as e:
+                                ticket.message_post(body=str(e))
                             finally:
                                 module.ad_paths.remove(module_dir)
 
@@ -104,6 +106,8 @@ class HelpdeskTicket(models.Model):
                                     new_rec = self.env['master.account.bank.statement.import'].with_context(journal_id=journal_id).create({'data_file': base64.b64encode(extract_file.read()), 'filename': 'test'})
                                     new_rec.import_file()
                                     ticket.write({'stage_id': stage.id})
+                            except Exception as e:
+                                ticket.message_post(body=str(e))
                             finally:
                                 module.ad_paths.remove(module_dir)
 

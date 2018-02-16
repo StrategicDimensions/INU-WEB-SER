@@ -31,6 +31,7 @@
         'views/report_bulk_view.xml',
         'views/helpdesk_ticket_views.xml',
         'wizard/partner_watchlist_comment_view.xml',
+        'views/auth_signup_login_templates.xml',
     ],
     'qweb': [
         "static/src/xml/account_reconciliation.xml",

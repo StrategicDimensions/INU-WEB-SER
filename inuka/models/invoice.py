@@ -7,6 +7,10 @@ from odoo.exceptions import UserError
 class AccountInvoice(models.Model):
     _inherit = "account.invoice"
 
+    @api.model
+    def _get_default_team(self):
+        return self.env['crm.team']._get_default_team_id()
+
     purchase_type = fields.Selection([
         ('it', 'IT'),
         ('​stationery', '​Stationery'),
@@ -28,6 +32,7 @@ class AccountInvoice(models.Model):
         ('portal', 'Online Portal'),
         ('mobile', 'Mobile Application'),
     ], string="Channel")
+    team_id = fields.Many2one('crm.team', string='Sales Team', default=_get_default_team, oldname='section_id')
 
     @api.depends('invoice_line_ids','invoice_line_ids.pv')
     def _compute_tot_pv(self):
@@ -96,3 +101,18 @@ class AccountInvoiceLine(models.Model):
         self.pv = self.product_id.pv * self.quantity
         self.unit_pv = self.product_id.pv
         super(AccountInvoiceLine, self)._set_additional_fields(invoice)
+
+    @api.onchange('discount')
+    def _set_pv_zero(self):
+        if self.discount > 0:
+            self.pv = 0
+            self.unit_pv = 0
+        else:
+            self.pv = self.product_id.pv * self.quantity
+            self.unit_pv = self.product_id.pv
+
+
+class AccountInvoiceReport(models.Model):
+    _inherit = 'account.invoice.report'
+
+    team_id = fields.Many2one('crm.team', string='Sales Team')

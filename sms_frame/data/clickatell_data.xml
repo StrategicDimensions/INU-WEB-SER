@@ -31,4 +31,13 @@
         <field name="template_body">INUKA New Registration received^WELL DONE, ${object.upline.name}^New MemberID ${object.ref} for ${object.name} activated once kit is receipted^Info 27219499850</field>
     </record>
 
+    <record id="sms_template_reset_password" model="sms.template">
+        <field name="name">Portal Password Reset</field>
+        <field name="model_id" search="[('model', '=', 'res.users')]"/>
+        <field name="from_mobile_verified_id" ref="sms_number_inuka_international"/>
+        <field name="from_mobile">41798073057</field>
+        <field name="template_body">Dear ${object.name}, A password reset was requested for your Inuka Portal/Mobile App. Change your password by following this link which is valid for 24 hrs:
+${object.partner_id.signup_url}</field>
+    </record>
+
 </odoo>

@@ -460,4 +460,15 @@
     <menuitem id="menu_sms_numbers" action="sms_frame.sms_number_action" name="SMS Numbers" parent="menu_sms_configuration" sequence="2"/>
     <menuitem id="menu_sms_templates" action="sms_frame.sms_template_action" name="SMS Templates" parent="menu_sms_configuration" sequence="3"/>
 
+    <record id="view_sms_message_form_inherit_inuka" model="ir.ui.view">
+        <field name="name">sms.message.form.inherit.inuka</field>
+        <field name="model">sms.message</field>
+        <field name="inherit_id" ref="sms_frame.sms_message_view_form"/>
+        <field name="arch" type="xml">
+            <field name="sms_content" position="after">
+                <field name="keyword"/>
+            </field>
+        </field>
+    </record>
+
 </odoo>

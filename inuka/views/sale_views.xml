@@ -260,7 +260,7 @@
         <field name="arch" type="xml">
             <form string="Sale Upload">
             <header>
-                <button name="button_start" string="Start" type="object" states="new" class="btn-primary"/>
+                <button name="button_start" string="Start" type="object" states="new,inprogress" class="btn-primary"/>
                 <button name="button_cancel" string="Cancel" type="object" states="new,inprogress" class="btn-primary"/>
                 <field name="state" widget="statusbar" statusbar_visible="new,inprogress,completed,error,cancelled"/>
             </header>
@@ -279,7 +279,7 @@
                     <group>
                         <field name="end_time" readonly="1"/>
                         <field name="create_date" string="Date" readonly="1"/>
-                        <field name="end_point"/>
+                        <field name="end_point" readonly="1"/>
                     </group>
                 </group>
                 <group>
@@ -390,5 +390,37 @@
         parent="sale.menu_sale_report"
         action="sales_team.crm_team_salesteams_act"
         sequence="2"/>
+
+    <record id="sale.view_order_product_search" model="ir.ui.view">
+        <field name="name">sale.report.search</field>
+        <field name="model">sale.report</field>
+        <field name="arch" type="xml">
+            <search string="Sales Analysis">
+                <field name="date"/>
+                <filter string="This Year" name="year" invisible="1" domain="[('date','&lt;=', time.strftime('%%Y-12-31')),('date','&gt;=',time.strftime('%%Y-01-01'))]"/>
+                <filter name="Quotations" string="Quotations" domain="[('state','in', ('draft', 'sent'))]"/>
+                <filter name="Sales" string="Sales" domain="[('state','not in',('draft', 'cancel', 'sent'))]"/>
+                <separator/>
+                <field name="partner_id"/>
+                <field name="product_id"/>
+                <field name="user_id"/>
+                <group expand="0" string="Extended Filters">
+                    <field name="categ_id" filter_domain="[('categ_id', 'child_of', self)]"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                </group>
+                <group expand="1" string="Group By">
+                    <filter string="Salesperson" name="User" context="{'group_by':'user_id'}"/>
+                    <filter string="Sales Team" context="{'group_by':'team_id'}"/>
+                    <filter string="Partner's Country" name="country_id" context="{'group_by':'country_id'}"/>
+                    <filter string="Customer" name="Customer" context="{'group_by':'partner_id'}"/>
+                    <filter string="Product Category" name="Category" context="{'group_by':'categ_id'}"/>
+                    <filter name="status" string="Status" context="{'group_by':'state'}"/>
+                    <filter string="Company" groups="base.group_multi_company" context="{'group_by':'company_id'}"/>
+                    <separator/>
+                    <filter string="Order Month" context="{'group_by':'date:month'}" help="Ordered date of the sales order"/>
+                </group>
+            </search>
+        </field>
+    </record>
 
 </odoo>
