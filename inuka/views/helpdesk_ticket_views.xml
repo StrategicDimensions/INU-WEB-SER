@@ -9,8 +9,13 @@
             <button name="assign_ticket_to_self" position="after">
                 <button name="create_sale_order" string="Create Sales Order" type="object" class="oe_highlight" attrs="{'invisible': [('is_close', '=', True)]}"/>
                 <button name="sms_action" string="Send SMS" type="object" class="oe_highlight"/>
+                <button name="import_bank_statement" string="Import Statement" type="object" class="oe_highlight"/>
             </button>
             <button name="open_customer_tickets" position="after">
+                <button class="oe_stat_button" type="object" name="view_sms_message"
+                    icon="fa-random">
+                    <field string="SMS's" name="sms_count" widget="statinfo"/>
+                </button>
                 <button class="oe_stat_button" type="object" name="view_sale_orders"
                     icon="fa-usd">
                     <field string="Sales" name="sale_order_count" widget="statinfo"/>

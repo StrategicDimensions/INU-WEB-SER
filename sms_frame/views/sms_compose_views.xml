@@ -13,7 +13,7 @@
                         <field name="model" invisible="1"/>
                         <field name="sms_template_id" domain="[('model_id.model','=',model)]" />
                         <field name="from_mobile_id"/>
-                        <field name="to_number" />
+                        <field name="to_number" force_save="1"/>
                         <field name="sms_content"/>
                         <field name="media_id" filename="media_filename"/>
                         <field name="media_filename" invisible="1"/> 

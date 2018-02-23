@@ -61,3 +61,9 @@ class Picking(models.Model):
         if not context.get('from_bulk') and any(picking.bulk_master_id.id != False for picking in self):
             raise UserError(_("You cannot validate if part of bulk."))
         return super(Picking, self).button_validate()
+
+
+class DeliveryCarrier(models.Model):
+    _inherit = 'delivery.carrier'
+
+    blocked_for_delivery = fields.Boolean("Blocked for Delivery")

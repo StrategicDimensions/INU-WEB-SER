@@ -456,6 +456,17 @@
         </field>
     </record>
 
+    <record id="view_res_partner_filter_inherit_inuka" model="ir.ui.view">
+        <field name="name">res.partner.filter.inherit.inuka</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <field name="name" position="replace">
+                <field name="name" filter_domain="['|','|','|',('display_name','ilike',self),('ref','=',self),('email','ilike',self),('mobile','ilike',self)]"/>
+            </field>
+        </field>
+    </record>
+
     <record id="view_performance_history_tree" model="ir.ui.view">
         <field name="name">performance.history.tree</field>
         <field name="model">performance.history</field>

@@ -17,6 +17,13 @@ class HelpdeskTicket(models.Model):
     mobile = fields.Char("Customer Mobile")
     sale_order_count = fields.Integer(compute="_compute_sale_order_count", string="Sale Orders")
     is_close = fields.Boolean(related="stage_id.is_close")
+    sms_count = fields.Integer(compute="_compute_sms_count", string="SMS Count")
+
+    def _compute_sms_count(self):
+        SmsMessage = self.env['sms.message']
+        model_id = self.env['ir.model'].search([('model', '=', 'helpdesk.ticket')], limit=1).id
+        for ticket in self:
+            ticket.sms_count = SmsMessage.search_count([('model_id', '=', model_id), ('record_id', '=', ticket.id)])
 
     def _compute_sale_order_count(self):
         SaleOrder = self.env['sale.order']
@@ -36,6 +43,8 @@ class HelpdeskTicket(models.Model):
             'partner_id': self.partner_id.id,
             'ticket_id': self.id,
         })
+        msg = "This Sales Order has been created from Ticket {%s}: <a href=# data-oe-model=helpdesk.ticket data-oe-id=%d>{%s}</a>" % (self.id, self.id, self.name)
+        saleorder.message_post(body=msg)
         view_id = self.env.ref('sale.view_order_form').id
         return {
             'type': 'ir.actions.act_window',
@@ -48,20 +57,38 @@ class HelpdeskTicket(models.Model):
         }
 
     @api.multi
+    def view_sms_message(self):
+        self.ensure_one()
+        model_id = self.env['ir.model'].search([('model', '=', 'helpdesk.ticket')], limit=1).id
+        messages = self.env['sms.message'].search([('model_id', '=', model_id), ('record_id', '=', self.id)])
+
+        return {
+            'name': _('Messages'),
+            'type': 'ir.actions.act_window',
+            'view_type': 'form',
+            'view_mode': 'tree,form',
+            'res_model': 'sms.message',
+            'context': self.env.context,
+            'domain': [('id', 'in', messages.ids)],
+        }
+
+    @api.multi
     def import_bank_statement(self):
         ResPartnerBank = self.env['res.partner.bank']
         stage = self.env['helpdesk.stage'].search([('name', '=', 'Solved')], limit=1)
         for ticket in self:
             attachments = self.env['ir.attachment'].search([('res_id', '=', ticket.id), ('res_model', '=', 'helpdesk.ticket')])
+            if not attachments:
+                continue
 
             acc_number = ticket.name.split("[")[1][:-1]
-            bank_account_id = ResPartnerBank.search([('acc_number', '=', acc_number)], limit=1).id
+            bank_account_id = ResPartnerBank.search([('acc_number', 'in', (acc_number,'00000'+acc_number))], limit=1).id
             journal_id = self.env['account.journal'].search([('bank_account_id', '=', bank_account_id)], limit=1).id
             for attachment in attachments:
                 fp = BytesIO()
                 fp.write(base64.b64decode(attachment.datas))
                 if not zipfile.is_zipfile(fp):
-                    raise UserError(_('File is not a zip file!'))
+                    continue
                 if zipfile.is_zipfile(fp):
                     with zipfile.ZipFile(fp, "r") as z:
                         with tempdir() as module_dir:
@@ -85,15 +112,17 @@ class HelpdeskTicket(models.Model):
         stage = self.env['helpdesk.stage'].search([('name', '=', 'Solved')], limit=1)
         for ticket in self:
             attachments = self.env['ir.attachment'].search([('res_id', '=', ticket.id), ('res_model', '=', 'helpdesk.ticket')])
+            if not attachments:
+                continue
 
             acc_number = ticket.name.split("[")[1][:-1]
-            bank_account_id = ResPartnerBank.search([('acc_number', '=', acc_number)], limit=1).id
+            bank_account_id = ResPartnerBank.search([('acc_number', 'in', (acc_number,'00000'+acc_number))], limit=1).id
             journal_id = self.env['account.journal'].search([('bank_account_id', '=', bank_account_id)], limit=1).id
             for attachment in attachments:
                 fp = BytesIO()
                 fp.write(base64.b64decode(attachment.datas))
                 if not zipfile.is_zipfile(fp):
-                    raise UserError(_('File is not a zip file!'))
+                    continue
                 if zipfile.is_zipfile(fp):
                     with zipfile.ZipFile(fp, "r") as z:
                         with tempdir() as module_dir:

@@ -32,6 +32,7 @@ class SmsList(models.Model):
         recipients = self.env['sms.recipients'].search([('sms_list_id', '=', self.id)])
         action = self.env.ref('inuka_sms.action_sms_recipients_form').read()[0]
         action['domain'] = [('id', 'in', recipients.ids)]
+        action['context'] = {'default_sms_list_id': self.id}
         return action
 
 
@@ -53,6 +54,12 @@ class SmsRecipients(models.Model):
     optout = fields.Boolean("Opt Out")
     sms_list_id = fields.Many2one("sms.list", string="SMS List")
     company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.user.company_id)
+
+    @api.onchange('partner_id', 'mobile')
+    def _onchange_member(self):
+        if not self.partner_id and not self.mobile:
+            return
+        self.name = self.partner_id.name or self.mobile
 
 
 class MassSms(models.Model):
@@ -151,7 +158,7 @@ class MassSms(models.Model):
         participants = self.get_remaining_recipients()
         for participant in participants[:self.batch_size]:
             if participant.partner_id.mobile:
-                render_msg = self.env['sms.template'].render_template(self.sms_template_id.template_body, 'res.partner', participant.partner_id.id)
+                render_msg = self.env['sms.template'].render_template(self.sms_template_id.template_body, self.sms_template_id.model_id.model, participant.partner_id.id)
                 message = tools.html2plaintext(render_msg)
                 msg_compose = SmsCompose.create({
                     'record_id': participant.partner_id.id,
@@ -240,6 +247,7 @@ class SmsShortcode(models.Model):
     sms_template_id = fields.Many2one("sms.template", string="Template")
     member_required = fields.Boolean("Member Required")
     active = fields.Boolean(default=True)
+    no_member_sms_template_id = fields.Many2one("sms.template", string="No Member SMS Template")
 
 
 class SmsMessage(models.Model):
@@ -285,7 +293,17 @@ class SmsMessage(models.Model):
                         'sms_content': message,
                     })
                     msg_compose.send_entity()
-
+            elif shortcode and shortcode.member_required and message.model_id.model != 'res.partner':
+                if message.from_mobile:
+                    msg_compose = SmsCompose.create({
+                        'record_id': message.record_id,
+                        'model': message.model_id.model,
+                        'sms_template_id': shortcode.no_member_sms_template_id.id,
+                        'from_mobile_id': self.env.ref('sms_frame.sms_number_inuka_international').id,
+                        'to_number': message.from_mobile,
+                        'sms_content': shortcode.no_member_sms_template_id.template_body,
+                    })
+                    msg_compose.send_entity()
             elif shortcode and not shortcode.member_required:
                 msg_compose = SmsCompose.create({
                     'record_id': message.record_id,
@@ -300,6 +318,24 @@ class SmsMessage(models.Model):
 
 class SmsCompose(models.Model):
     _inherit = "sms.compose"
+
+    @api.model
+    def create(self, vals):
+        if vals is None:
+            vals = {}
+        SmsAccount = self.env['sms.account']
+        SmsNumber = self.env['sms.number']
+        to_number = vals.get('to_number')
+        if to_number:
+            if to_number.startswith('27'):
+                sms_account = SmsAccount.search([('international', '=', False)], limit=1)
+            else:
+                sms_account = SmsAccount.search([('international', '=', True)], limit=1)
+            if not sms_account:
+                sms_account = SmsAccount.search([], limit=1)
+            from_mobile = SmsNumber.search([('account_id', '=', sms_account.id)], limit=1)
+            vals['from_mobile_id'] = from_mobile.id
+        return super(SmsCompose, self).create(vals)
 
     @api.multi
     def send_entity(self):
@@ -344,3 +380,10 @@ class SmsCompose(models.Model):
         if self.media_id:
             attachments.append((self.media_filename, base64.b64decode(self.media_id)) )
         self.env[self.model].search([('id','=', self.record_id)]).message_post(body=self.sms_content, subject="SMS Sent", message_type="comment", subtype_id=sms_subtype.id, attachments=attachments)
+
+
+class SmsAccount(models.Model):
+    _inherit = "sms.account"
+
+    active = fields.Boolean(default=True)
+    international = fields.Boolean()

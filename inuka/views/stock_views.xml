@@ -24,4 +24,26 @@
         </field>
     </record>
 
+    <record id="view_stock_picking_form_inherit_carrier_inuka" model="ir.ui.view">
+        <field name="name">stock.picking.form.inherit.carrier.inuka</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="delivery.view_picking_withcarrier_out_form"/>
+        <field name="arch" type="xml">
+            <label for="carrier_tracking_ref" position="attributes">
+                <attribute name="string">Waybill</attribute>
+            </label>
+        </field>
+    </record>
+
+    <record id="view_delivery_carrier_form_inherit_inuka" model="ir.ui.view">
+        <field name="name">delivery.carrier.form.inherit.inuka</field>
+        <field name="model">delivery.carrier</field>
+        <field name="inherit_id" ref="delivery.view_delivery_carrier_form"/>
+        <field name="arch" type="xml">
+            <field name="integration_level" position="after">
+                <field name="blocked_for_delivery"/>
+            </field>
+        </field>
+    </record>
+
 </odoo>

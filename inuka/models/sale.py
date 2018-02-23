@@ -20,7 +20,7 @@ class SaleOrder(models.Model):
 
     @api.model
     def _get_default_team(self):
-        return self.env['crm.team']._get_default_team_id()
+        return self.env['crm.team']._get_default_team_id() or self.env['crm.team'].search([('company_id', '=', self.env.user.company_id.id)], limit=1)
 
     @api.depends('order_line','order_line.pv')
     def _compute_tot_pv(self):
@@ -138,6 +138,8 @@ class SaleOrder(models.Model):
     @api.multi
     def action_confirm(self):
         for order in self:
+            if order.carrier_id.blocked_for_delivery:
+                raise UserError(_("Delivery Method not allowed. Please select a different delivery method to continue."))
             res = order.carrier_id.rate_shipment(order)
             order.get_delivery_price()
             order.set_delivery_line()
@@ -342,8 +344,11 @@ class SaleUpload(models.Model):
         record_count = status_count = 0
         for data in row_list:
             if data.get('MEMBERID'):
-                part = Partner.search([('ref', '=', data['MEMBERID'])], limit=1)
-                if part:
+                sql_query = """SELECT id, status FROM res_partner WHERE ref = %s LIMIT 1"""
+                params = (data.get('MEMBERID'),)
+                self.env.cr.execute(sql_query, params)
+                result = self.env.cr.fetchall()
+                if result:
                     try:
                         sql_query ="""UPDATE res_partner SET personal_pv = %s,
                                     pv_downline_1 = %s, pv_downline_2 = %s,
@@ -354,10 +359,10 @@ class SaleUpload(models.Model):
                         self.env.cr.execute(sql_query, params)
                         record_count += 1
     
-                        if part.status != status_dict.get(data.get('STATUS')):
+                        if result[0][1] != status_dict.get(data.get('STATUS')):
                             sql_query = """INSERT INTO sale_upload_intermediate (partner_id, old_status, new_status, active)
                                     VALUES (%s, %s, %s, %s)"""
-                            params = (part.id, part.status, status_dict.get(data.get('STATUS')), True)
+                            params = (result[0][0], result[0][1], status_dict.get(data.get('STATUS')), True)
                             self.env.cr.execute(sql_query, params)
                             self.env.cr.commit()
                             status_count += 1
